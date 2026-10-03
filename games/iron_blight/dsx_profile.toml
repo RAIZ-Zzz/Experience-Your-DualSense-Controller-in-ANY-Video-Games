@@ -17,8 +17,15 @@ rumble_isenabled = true
 rumble_haptics_enabled = true        # Xbox rumble -> haptics
 bluetooth_haptics_enabled = true     # DSX+: haptics over Bluetooth
 bluetooth_haptics_config_rumble_to_haptics_updated_enabled = true
-audio_to_rumble = false              # only shots shake the controller, not every sound / the music
+audio_to_rumble = true               # game sound -> haptics too (user's choice, set in the DSX UI 2026-10-04)
+haptics_audio_source = "SystemAudio"
+bluetooth_haptics_capture_device_id = ""    # "" = Windows default output device
 trigger_haptics_enabled = false      # "Trigger To Haptics" follows the pull, not the shots, on both sides
+
+[controller_haptics.audio]           # the audio source DSX listens to (set in the DSX UI)
+source = "SystemAudio"
+capture_device_selection_mode = "Default"
+capture_device_id = ""
 
 [controller_adaptive_triggers]
 lt_type = "OFF"                      # RT is driven live by the bridge; LT left alone
