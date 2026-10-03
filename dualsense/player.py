@@ -33,6 +33,22 @@ def right_trigger():
     return triggers()[1]
 
 
+class _XInputVibration(ctypes.Structure):
+    _fields_ = [("left", ctypes.c_ushort), ("right", ctypes.c_ushort)]
+
+
+def rumble(level):
+    """Xbox rumble 0..1 on both motors of every XInput pad (DSX's virtual pad turns it into DualSense haptics
+    when the DSX profile has UseXboxRumble + rumble haptics on). Same as a game's own rumble call."""
+    try:
+        x = ctypes.WinDLL("xinput1_4")
+    except OSError:
+        return
+    v = int(max(0.0, min(1.0, level)) * 65535)
+    for i in range(4):
+        x.XInputSetState(i, ctypes.byref(_XInputVibration(v, v)))
+
+
 class PlayerPicker:
     """Votes from the last `window` polls in which the button was held and the hooked code ran;
     the object with most votes is the player's. A new level (new objects) takes over within a few events."""
