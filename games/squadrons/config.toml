@@ -8,8 +8,9 @@ resend_seconds = 1.0   # re-send the current effect this often so DSX stays in s
 [loop]
 hz = 200               # how often the shot counter is checked; higher = pulse closer to the shot
 
-[telemetry]
-port = 20777            # TODO the UDP port you set in the game's telemetry settings
+[game]
+# The EAC bypass runs the game under the launcher's name.
+process_names = ["starwarssquadrons_launcher.exe", "starwarssquadrons.exe"]
 
 [fire]                 # RT - primary weapons: one vibration pulse per shot the game fires
 pulse_strength = 8     # pulse strength (0-8), the same for every shot

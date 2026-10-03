@@ -1,0 +1,42 @@
+# DSX settings for Squadrons. Applied on top of `base_profile` to produce the profile `name`.
+# Sections and keys are DSX's own (see DSX_Savefile\Configuration Files\Controller Profiles\*.dsx);
+# a misspelt key stops the script instead of being silently ignored.
+# Apply: close DSX, run apply-dsx-profile.bat, start DSX.
+
+dsx_dir = 'D:\steam\steamapps\common\DSX\Main_v3_Beta'
+base_profile = "Default Profile"
+name = "Star Wars Squadrons"
+
+[controller_general]
+ActiveVirtualDevice = "XBOX_360"     # Squadrons only understands Xbox pads
+UseXboxRumble = true
+
+[controller_haptics_rumble]
+mode = "HAPTICS"                     # set in the DSX UI
+audio_haptics_enabled = true         # set in the DSX UI
+rumble_isenabled = true
+rumble_haptics_enabled = true        # game rumble   -> haptics
+rumble_haptics_leftmotor_intensity = 80     # Xbox "left = heavy" rumble felt too strong on the left
+rumble_haptics_rightmotor_intensity = 100
+button_haptics_enabled = true        # button press  -> haptics
+button_haptics_leftmotor_intensity = 50
+button_haptics_rightmotor_intensity = 50
+trigger_haptics_enabled = true       # trigger pull  -> haptics (the "da-da-da")
+trigger_haptics_leftmotor_intensity = 100
+trigger_haptics_rightmotor_intensity = 100
+joystick_haptics_enabled = true      # stick movement (turning) -> haptics
+joystick_haptics_leftmotor_intensity = 60
+joystick_haptics_rightmotor_intensity = 60
+touchpad_haptics_enabled = true      # set in the DSX UI
+bluetooth_haptics_enabled = true     # DSX+: haptics over Bluetooth
+bluetooth_haptics_config_rumble_to_haptics_updated_enabled = true
+bluetooth_haptics_config_mono_enabled = true            # set in the DSX UI
+bluetooth_haptics_playback_buffer_latency_scale = 37    # set in the DSX UI
+bluetooth_haptics_speaker_volume = 0                    # no game sound from the controller speaker
+
+[controller_motion]
+motion_mode = "DISABLED"             # no gyro: the game has no gyro support, so gyro-as-stick drifts with no way to re-center
+
+[controller_adaptive_triggers]
+lt_type = "OFF"                      # triggers are driven live by the bridge (config.toml)
+rt_type = "OFF"

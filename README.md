@@ -1,37 +1,40 @@
-# Experience Your DualSense Controller in ANY Video Game: online track
+# Experience Your DualSense Controller in ANY Video Game: games with anti-cheat
 
-**Branch `online`**: for games played online, with their anti-cheat running. The game's memory is
-**never opened**. Game state comes only from sources the game allows: its own telemetry / game-state
-API, your controller input, or your PC's audio output. Read [ONLINE_RULES.md](ONLINE_RULES.md) first.
+**Branch `online`**: games that have online modes and an anti-cheat (EasyAntiCheat, BattlEye, ...).
+They are supported **only in their offline modes, with the anti-cheat switched off**, and the anti-cheat
+is restored before any online play. Read [ANTI_CHEAT_RULES.md](ANTI_CHEAT_RULES.md) first.
 
-For offline / single-player games (memory hooks allowed), use the [`single-player`](../../tree/single-player)
-branch; [`main`](../../tree/main) explains both tracks.
+Single-player games without anti-cheat are on [`single-player`](../../tree/single-player);
+[`main`](../../tree/main) explains both branches.
 
-> `tests/test_online.py` scans every Python file and fails if any process-memory, injection or
-> debugging API shows up. Keep it green; never weaken it.
+| Game | Offline modes | Triggers | Lightbar | Notes |
+|---|---|---|---|---|
+| Star Wars: Squadrons (EA app 1.0.10.39591) | Story, Practice | ✅ one pulse per shot, any ship | ✅ hull: green → red | [games/squadrons](games/squadrons/README.md) |
 
-## Status
+## Play (Squadrons)
 
-Framework, rules and template. No game yet: the first candidates are games with official telemetry
-(racing games' UDP "data out", Valve's Game State Integration).
+1. Switch EAC off for offline play: [games/squadrons/README.md](games/squadrons/README.md#anti-cheat-off-offline-only).
+2. Set `dsx_dir` in `games/squadrons/dsx_profile.toml` to your DSX folder.
+3. Close DSX, run `games/squadrons/apply-dsx-profile.bat`, start DSX.
+4. Run `games/squadrons/start.bat` (it waits for the game), then launch the game. Story or Practice only.
+5. Before playing online: close `start.bat`, then *Repair* the game in the EA app to restore EAC.
 
-## Layout
-
-```
-dualsense/            shared core (from main) + online parts:
-  telemetry.py        UdpTelemetryReader: subclass, implement parse(packet) -> GameState
-games/_online_template/   start here for a new online game
-ONLINE_RULES.md       what is never allowed, what is allowed, what to ask first
-tests/                python -m unittest discover tests (includes the guard)
-```
+`demo.bat` lets you feel and tune the effects without the game; tuning lives in `config.toml`.
 
 ## Adding a game
 
-1. Check `ONLINE_RULES.md` and find an allowed source for the game.
-2. Copy `games/_online_template`, implement `parse()` from the game's published packet format.
-3. `demo.bat` to tune the feel, `start.bat` to play.
+Copy `games/_template` to `games/<name>/`, then find three hooks: code that runs every frame while
+playing, code that reads the player's health, and code that runs exactly once per shot. The game's
+README must document how the anti-cheat is switched off for offline play and how it is restored
+(`tests/test_rules.py` checks it). The method is in
+[`skill/dualsense-for-every-game/SKILL.md`](skill/dualsense-for-every-game/SKILL.md).
 
-The full workflow is in the Claude Code skill: [`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md).
+## Haptics (work in progress)
+
+Through Xbox emulation, game rumble reaches the DualSense as "left = heavy, right = light", so a balanced
+left/right effect is not possible on that path (tested down to left 8 % vs right 100 %: left still
+stronger). DSX's UDP interface exposes triggers and LEDs, not the haptic actuators. Audio-to-haptics
+(DSX+ over Bluetooth) is stereo but listens to the system output. `tools/haptics/` has the tests.
 
 ## License
 
