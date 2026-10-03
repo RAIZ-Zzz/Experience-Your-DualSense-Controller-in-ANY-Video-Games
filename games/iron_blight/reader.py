@@ -107,15 +107,17 @@ class IronBlightReader:
             hull = max(0.0, min(1.0, s["health"] / s["base_health"]))
         shots, gun = 0, s["gun"]
         if gun:
-            busy = s["reloading"] or s["checking"]            # a magazine out is not a shot
+            # a magazine out is not a shot; melee weapons also have an ammoCount (durability?), never a shot
+            busy = s["reloading"] or s["checking"] or s["melee"]
             if gun == self.gun and self.ammo is not None and s["ammo"] is not None and not busy:
                 shots = max(0, self.ammo - s["ammo"])
             self.gun, self.ammo = gun, s["ammo"]
         else:
             self.gun = self.ammo = None
+        # slack = plain trigger: no gun in hand, or a gun that can't fire (empty, jammed); melee has its own profile
+        slack = not gun or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
         return GameState(attached=True, in_flight=playing, hull=hull, shots=shots if playing else 0,
-                         weapon=s.get("weapon") if gun else None,
-                         slack=bool(gun) and not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
+                         weapon=s.get("weapon") if gun else None, slack=slack)
 
     def close(self):
         """Nothing in the game to restore: this reader never writes."""

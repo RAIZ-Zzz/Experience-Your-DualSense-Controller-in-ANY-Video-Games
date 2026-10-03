@@ -40,6 +40,17 @@ class Shots(unittest.TestCase):
         seq = states(snap(3), snap(0, reloading=True), snap(8, reloading=True), snap(8), snap(1, checking=True))
         self.assertEqual([s.shots for s in seq], [0] * 5)
 
+    def test_melee_durability_drop_is_not_a_shot(self):
+        m = dict(melee=True, weapon="melee")
+        self.assertEqual([s.shots for s in states(snap(10, **m), snap(9, **m))], [0, 0])
+
+    def test_jammed_shot_kicks_then_nothing_until_cleared(self):
+        # the in-game trace of 02:12:48-51: jam on the 3rd shot, clearing shows as reloading
+        seq = states(snap(7), snap(6, jammed=True), snap(6, jammed=True, reloading=True),
+                     snap(6, reloading=True), snap(6))
+        self.assertEqual([s.shots for s in seq], [0, 1, 0, 0, 0])
+        self.assertEqual([s.slack for s in seq], [False, True, True, False, False])
+
     def test_switching_guns_resets_the_count(self):
         self.assertEqual([s.shots for s in states(snap(8), snap(2, gun=OTHER), snap(1, gun=OTHER))], [0, 0, 1])
 
@@ -54,6 +65,7 @@ class Trigger(unittest.TestCase):
     def test_empty_or_jammed_is_slack_melee_never(self):
         self.assertEqual([s.slack for s in states(snap(1), snap(0), snap(5, jammed=True))], [False, True, True])
         self.assertFalse(states(snap(0, melee=True, weapon="melee"))[0].slack)
+        self.assertTrue(states(snap(None, gun=None, weapon=None))[0].slack)          # no gun: plain trigger
         fx = Effects(CFG)
         self.assertEqual(fx.update(states(snap(0))[0], 5.0).mode, Mode.NORMAL)
 
