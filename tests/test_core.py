@@ -68,19 +68,19 @@ class TriggerEffects(unittest.TestCase):
                          Effects(CFG).update(GameState(**FLYING), 0.0))
 
     def test_rumble_one_kick_per_shot_off_without_config(self):
-        cfg = CFG | {"fire": CFG["fire"] | {"rumble": 0.8, "rumble_seconds": 0.1}}
+        cfg = CFG | {"fire": CFG["fire"] | {"rumble_right": 0.8, "rumble_seconds": 0.1}}
         fx = Effects(cfg)
         level = []
         for i, n in enumerate(([1] + [0] * 39) * 3):                     # 200 Hz, a shot every 0.2 s
             s = GameState(**FLYING, shots=n)
             fx.update(s, i / 200)
             level.append(fx.rumble(s, i / 200))
-        kicks = sum(1 for a, b in zip([0.0] + level, level) if b and not a)
-        self.assertEqual((kicks, max(level)), (3, 0.8))
-        self.assertEqual(level[39], 0.0)                                  # quiet between shots
+        kicks = sum(1 for a, b in zip([(0.0, 0.0)] + level, level) if any(b) and not any(a))
+        self.assertEqual((kicks, max(level)), (3, (0.0, 0.8)))            # right motor only
+        self.assertEqual(level[39], (0.0, 0.0))                           # quiet between shots
         fx = Effects(CFG)                                                 # no rumble keys (Squadrons)
         fx.update(GameState(**FLYING, shots=1), 1.0)
-        self.assertEqual(fx.rumble(GameState(**FLYING), 1.0), 0.0)
+        self.assertEqual(fx.rumble(GameState(**FLYING), 1.0), (0.0, 0.0))
 
     def test_slack_drops_resistance_after_the_last_pulse(self):
         fx = Effects(CFG)

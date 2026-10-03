@@ -32,7 +32,7 @@ class Effects:
         self.shown_hue = None
         self.flashed_at = -math.inf
         self.last_now = None
-        self.rumble_end, self.rumble_level = -math.inf, 0.0
+        self.rumble_end, self.rumble_level = -math.inf, (0.0, 0.0)
 
     def update(self, state, now):
         """-> RT effect, driven by the shots the game fires (state.shots, from its per-shot code).
@@ -51,7 +51,7 @@ class Effects:
             self.pulse_start = now + f["pulse_break"] if self.pulse_start <= now < end else max(now, end + f["pulse_break"])
             self.pulse = min(f["pulse_seconds"], (now - self.shot_at) * f["pulse_share"])
             self.rumble_end = now + min(f.get("rumble_seconds", 0.0), (now - self.shot_at) * f["pulse_share"])
-            self.rumble_level = f.get("rumble", 0.0)
+            self.rumble_level = (f.get("rumble_left", 0.0), f.get("rumble_right", 0.0))
             self.shot_at = now
 
         h = state.hull
@@ -66,11 +66,11 @@ class Effects:
         return TriggerEffect.resistance(f["base_start"], f["base_force"])
 
     def rumble(self, state, now):
-        """Controller body rumble 0..1 (sent as Xbox rumble to DSX's virtual pad): one kick per shot, `rumble`
-        strength for `rumble_seconds` (capped like the trigger pulse, so held fire stays one kick per shot).
-        For games that send no rumble of their own; absent keys = 0 = off."""
+        """Controller body rumble (left, right) 0..1, sent as Xbox rumble to DSX's virtual pad: one kick per
+        shot, `rumble_left` / `rumble_right` strength for `rumble_seconds` (capped like the trigger pulse, so
+        held fire stays one kick per shot). For games that send no rumble of their own; absent keys = off."""
         if not (state.attached and state.in_flight) or now >= self.rumble_end:
-            return 0.0
+            return 0.0, 0.0
         return self.rumble_level
 
     def lightbar(self, state, now):
