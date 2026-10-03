@@ -73,6 +73,8 @@ class Trigger(unittest.TestCase):
         self.assertEqual([s.slack for s in states(snap(1), snap(0), snap(5, jammed=True))], [False, True, True])
         self.assertFalse(states(snap(0, melee=True, weapon="melee"))[0].slack)
         self.assertTrue(states(snap(None, gun=None, weapon=None))[0].slack)          # no gun: plain trigger
+        # the in-game holster trace of 02:44:26: isSelected False while the holster animation plays
+        self.assertEqual([s.slack for s in states(snap(8, selected=True), snap(8, selected=False))], [False, True])
         fx = Effects(CFG)
         self.assertEqual(fx.update(states(snap(0))[0], 5.0).mode, Mode.NORMAL)
 

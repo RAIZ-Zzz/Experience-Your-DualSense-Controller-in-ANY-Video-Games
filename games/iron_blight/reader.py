@@ -92,7 +92,8 @@ class IronBlightReader:
         gh = il.static(gh_cls, "instance") if gh_cls else None
         if gun_cls and il.is_a(gh, gh_cls):
             gun = il.get(gh, gh_cls, "currentGun")
-            s |= {"reloading": il.get(gh, gh_cls, "isReloading"), "checking": il.get(gh, gh_cls, "isCheckingAmmo"),
+            s |= {"selected": il.get(gh, gh_cls, "isSelected"),
+                  "reloading": il.get(gh, gh_cls, "isReloading"), "checking": il.get(gh, gh_cls, "isCheckingAmmo"),
                   "shot_count": il.get(gh, gh_cls, "shotCount"),
                   "melee_attacking": il.get(gh, gh_cls, "isMeleeAttacking"),
                   "melee_land": il.get(gh, gh_cls, "canMeleeAttackLand")}
@@ -122,8 +123,9 @@ class IronBlightReader:
             self.gun, self.ammo = gun, s["ammo"]
         else:
             self.gun = self.ammo = None
-        # slack = plain trigger: no gun in hand, or a gun that can't fire (empty, jammed); melee has its own profile
-        slack = not gun or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
+        # slack = plain trigger: no gun in hand (holstered: GunHandler.instance is null; while holstering:
+        # isSelected False), or a gun that can't fire (empty, jammed); melee has its own profile
+        slack = not gun or s.get("selected") is False or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
         # body events on the moment an action starts (False -> True); the hit itself may come later (to measure)
         bumps = tuple(name for name, key in (("kick", "kicking"), ("melee", "melee_attacking"))
                       if s.get(key) and not self.prev.get(key))
