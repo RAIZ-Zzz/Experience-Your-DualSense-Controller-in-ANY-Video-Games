@@ -91,7 +91,7 @@ def new(name, track):
     by_branch = {br: wt for wt, br in worktrees()}
     if track not in by_branch:
         raise SystemExit(f"no worktree for {track}")
-    target, module = by_branch[track], name.replace("-", "_")
+    target, module = by_branch[track], re.sub(r"[^0-9a-z]+", "_", name.lower()).strip("_")
     game_dir = target / "games" / module
     if game_dir.exists():
         raise SystemExit(f"{game_dir} already exists")
