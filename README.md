@@ -73,7 +73,10 @@ Requirements: Windows 10/11, Python 3.11+ (stdlib only for playing), DSX v3 with
 ## Claude Code skill
 
 [`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md): copy the folder to
-`~/.claude/skills/` and run `/dualsense-for-every-game`.
+`~/.claude/skills/` and run `/dualsense-for-every-game <game install folder>`. The agent audits the
+folder (read only) and researches the game, proposes trigger / lightbar / haptics options per weapon class
+or play style for you to pick, then builds the script in the studio, never in the game folder, and asks
+before every hook.
 
 ## Prior art and credits
 
