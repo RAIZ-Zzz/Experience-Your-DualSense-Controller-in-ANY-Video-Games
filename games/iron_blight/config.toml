@@ -10,7 +10,7 @@ hz = 200               # how often the shot counter is checked; higher = pulse c
 
 [game]
 # Exe name(s) of the running game.
-process_names = ["TODO.exe"]          # the running game exe (Task Manager -> Details)
+process_names = ["Iron Blight.exe"]   # the running game exe (Task Manager -> Details)
 
 [fire]                 # RT - primary weapons: one vibration pulse per shot the game fires
 pulse_strength = 8     # pulse strength (0-8), the same for every shot

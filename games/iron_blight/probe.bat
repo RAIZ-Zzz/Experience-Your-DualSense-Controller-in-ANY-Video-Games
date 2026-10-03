@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0..\.."
-python -m games._template --probe %*
+python -m games.iron_blight --probe %*
 pause
