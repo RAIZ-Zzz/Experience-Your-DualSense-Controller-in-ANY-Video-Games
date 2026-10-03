@@ -8,7 +8,17 @@ description: Add DualSense adaptive triggers, lightbar (and haptics, where possi
 Goal: a PC game, a DualSense, and DSX. Make the controller react to what happens in the game:
 a trigger kick per shot, a lightbar that follows health, and later body haptics. The result is a
 `games/<name>/` folder in the framework repo
-(https://github.com/RAIZ-Zzz/Experience-Your-DualSense-Controller-in-ANY-Video-Games).
+(https://github.com/RAIZ-Zzz/Experience-Your-DualSense-Controller-in-ANY-Video-Games), on one of two
+branches:
+
+- **`single-player`**: offline games, played with anti-cheat off. Anything goes: read and hook game memory
+  (Phases 1–5 below).
+- **`online`**: games played online. The game's memory is never opened. Only official telemetry or
+  game-state APIs, the player's own controller input, and the PC's audio output. Follow `ONLINE_RULES.md`
+  on that branch; its guard test fails on any memory or injection API.
+
+`main` is the shared core (`dualsense/`: dsx, effects, player, bridge, profile). Fix core bugs there and
+merge `main` into both branches.
 
 The work alternates between you (code, memory analysis) and the user (holding the controller, playing).
 Most of the time goes into the loop *user does a scripted thing in game → you measure → you change one
@@ -16,10 +26,11 @@ thing*. Plan for that from the start.
 
 ## Ground rules
 
-- **Offline only.** Before touching memory, check what anti-cheat the game uses. Online modes with
-  anti-cheat: stop and say so. `dualsense/memory.py` refuses to attach while EasyAntiCheat runs; never
-  remove that guard. Running a game without its anti-cheat is acceptable only for single-player, and only
-  if the user chooses it.
+- **Pick the track first** (Phase 0). If the user will play the game online, it is the `online` track:
+  no memory reading, no hooks, no injection, no anti-cheat workarounds, even "read-only" or "just to find
+  an address". Decline those requests and offer an allowed source instead. Memory work happens only for
+  single-player play with the anti-cheat off, and only if the user chooses it. `dualsense/memory.py`
+  refuses to attach while EasyAntiCheat runs; never remove that guard.
 - **Measure, don't assert.** Every claim about the game (which code runs per shot, fire rate, how the
   controller feels) comes from a run whose real output you show. Assumptions that worked in one mission
   failed in the next (see lessons).
@@ -30,15 +41,33 @@ thing*. Plan for that from the start.
   user's timing.
 - Things that leave the machine, like pushing to GitHub or installing drivers: confirm first.
 
-## Phase 0: scope
+## Phase 0: scope and track
 
 Ask, or find out from the files:
 1. Game, store / launcher, exact build version (prior work such as CT tables often targets another build).
-2. Anti-cheat present? Is single-player playable without it? How is the game launched?
+2. **Will it be played online?** Online → `online` branch. Offline only → `single-player` branch.
+   Anti-cheat present? Is single-player playable without it? How is the game launched?
 3. What the user wants first. Triggers are the most reliable win; lightbar is easy once health is
    known; haptics depend on the output path (Phase 4).
 
-## Phase 1: environment
+### Online track sources (instead of Phase 3)
+
+In order of preference:
+1. **Official telemetry / game-state APIs**: racing games' UDP telemetry (F1, Forza, Assetto Corsa...),
+   Valve's Game State Integration (CS2, Dota 2: health, ammo, round state over local HTTP). Subclass the
+   telemetry reader on the `online` branch.
+2. **The player's own input**: XInput trigger / buttons of DSX's virtual pad (`dualsense/player.py`).
+   It shows *when the player pulls*, not *what the game did*, so design effects that stay honest
+   (e.g. a trigger feel per weapon class, chosen by the user).
+3. **The PC's audio output** (WASAPI loopback): e.g. gunshot onsets while RT is held give shot timing.
+   It reads only your own speakers' signal, never the game process.
+
+Not allowed on this track: opening the game process, reading or writing its memory, DLL injection,
+overlays that hook the game's renderer, driver tricks, or anything that hides from or disables the
+anti-cheat. Screen capture of the game window is a grey zone: some games tolerate it, some do not. Check
+that game's rules with the user before using it.
+
+## Phase 1: environment (both tracks)
 
 - DSX v3: *Incoming UDP* on (port in `%LOCALAPPDATA%\DSX\DSX_UDP_PortNumber.txt`, default 6969).
 - Virtual device **Xbox 360** for games without DualSense support. Do not switch to a virtual DualSense
@@ -54,12 +83,12 @@ Ask, or find out from the files:
   against the generated one**: anything the user changed in the DSX UI must go into the toml first, or
   the apply silently undoes it.
 
-## Phase 2: feel before you hunt
+## Phase 2: feel before you hunt (both tracks)
 
 Run `python -m games.<name> --demo` (the generic `DemoReader`) so the user can judge pulse strength,
 frequency and resistance before any reverse engineering. Tuning is in `config.toml`.
 
-## Phase 3: find the game state
+## Phase 3: find the game state (single-player track)
 
 Target three hooks (see `games/_template/reader.py`): **active** (runs every frame while playing, silent
 in menus), **health** (object holds the player's health), **shot** (runs exactly once per shot).
