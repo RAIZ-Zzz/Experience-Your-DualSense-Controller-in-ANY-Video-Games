@@ -19,6 +19,13 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 *Star Wars: Squadrons, in a TIE fighter cockpit: the lightbar has turned yellow because the hull is
 damaged. It goes back to green as the hull repairs and turns red, then pulses, when the hull is low.*
 
+## Known limitations
+
+- **On-screen button prompts are not changed.** DSX presents the DualSense to the game as an Xbox 360 pad,
+  so the game keeps showing Xbox (or keyboard) prompts. Switching them to PlayStation symbols is a
+  planned improvement, but not possible everywhere: some games ship no PlayStation button prompts at
+  all, and the others need a per-game UI or texture mod.
+
 ## Two branches
 
 | | [`single-player`](../../tree/single-player) | [`online`](../../tree/online) |

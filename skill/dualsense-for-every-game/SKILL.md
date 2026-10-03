@@ -99,6 +99,9 @@ Do steps 1–2 on your own, without asking the user, and without touching the ga
    - bow → `BOW` (tension grows with draw);
    - charge → rising `RESISTANCE`, `VIBRATE_TRIGGER` when full;
    plus the lightbar source (health, ammo, team colour) and what haptics can and cannot do (Phase 4).
+   Also say up front that on-screen button prompts stay Xbox (the game sees DSX's Xbox 360 pad); check in
+   step 2 whether the game ships PlayStation prompts at all, so the user knows if a later UI mod is
+   even possible.
    Say which game state each option needs, and whether that state needs a hook (Phase 3) or comes from
    telemetry / an existing mod. Recommend one option per effect; the user picks, then `studio.py new`.
 4. **Route.** Take the cheapest route that reaches the effect, and write in `MODLOG.md` why the cheaper
