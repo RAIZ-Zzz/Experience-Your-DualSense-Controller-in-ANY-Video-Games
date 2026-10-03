@@ -9,8 +9,8 @@ from dualsense.effects import Effects, GameState
 from dualsense.player import PlayerPicker
 from dualsense.profile import merge
 
-# Reference tuning: the Squadrons config (any game config has the same sections).
-CFG = tomllib.loads((Path(__file__).parent.parent / "games/squadrons/config.toml").read_text(encoding="utf-8"))
+# Reference tuning (the Squadrons values; every game config has the same sections).
+CFG = tomllib.loads((Path(__file__).parent.parent / "tests/config.toml").read_text(encoding="utf-8"))
 FLYING = dict(attached=True, in_flight=True)
 
 

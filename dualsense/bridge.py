@@ -70,7 +70,7 @@ class DemoReader:
 
 def cli(config_path, make_reader, extra=None):
     """Entry point for games/<name>/__main__.py. make_reader(cfg, clock) -> reader.
-    extra(args, cfg) may add track-specific options (see hooktools.add_options on the single-player branch)."""
+    extra(args, cfg) may add track-specific options (single-player branch: hooktools.add_options)."""
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--config", default=config_path)
     ap.add_argument("--demo", action="store_true")

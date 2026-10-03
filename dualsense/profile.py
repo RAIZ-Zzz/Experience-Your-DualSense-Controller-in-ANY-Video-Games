@@ -8,10 +8,10 @@ DSX must be closed (it rewrites its files on exit). Existing files are backed up
 import argparse
 import json
 import shutil
+import subprocess
 import tomllib
 from pathlib import Path
 
-from .memory import list_processes
 
 
 def merge(base, overrides):
@@ -43,7 +43,8 @@ def main():
 
     with open(args.overrides, "rb") as f:
         ov = tomllib.load(f)
-    if any(name == "dsx.exe" for _, name in list_processes()):
+    running = subprocess.run(["tasklist", "/FI", "IMAGENAME eq DSX.exe", "/NH"], capture_output=True, text=True).stdout
+    if "dsx.exe" in running.lower():
         raise SystemExit("Close DSX first (tray icon -> Exit), then run this again.")
 
     cfg_dir = Path(ov["dsx_dir"]) / "DSX_Savefile" / "Configuration Files"
