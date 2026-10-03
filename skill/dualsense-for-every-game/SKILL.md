@@ -183,6 +183,21 @@ the next. In Squadrons: RT pulse per shot, then the lightbar, then haptics.
 Iterate one variable at a time; show a frame-by-frame trace (e.g. `#` per 5 ms of pulse) of what the
 code will do before the user tests it.
 
+**Every state before the first in-game test** (`dualsense/states.py`). Iron Blight's first version had four
+bugs the user found in play (resistance with no gun, while holstering, melee durability counted as shots,
+jam), and every field behind them was already in the metadata. So before any feel test:
+1. List every bool / enum / pointer field of the classes the reader uses; each one becomes a dimension (or
+   is written down as irrelevant, with the reason). Add the per-frame events (shot, kick, hit, ...).
+2. Enumerate all combinations, then delete the impossible ones as rules with a comment each
+   (`IMPOSSIBLE` in `games/<name>/states.py`). Collapse dimensions that stop mattering (paused, holstered).
+3. Write the user's design as rules over (state, output) (`INVARIANTS`), run `python -m games.<name>
+   --states`: it simulates every state through the reader and Effects, writes `states.json` (one state per
+   line) and prints outputs grouped. Fix rule breaks; show the groups to the user and ask about the
+   surprising ones (Iron Blight: should a gun being reloaded keep its resistance?).
+4. Prove the rules bite: put each earlier bug back and check it breaks a rule.
+The tests then hold every state to the rules and to the reviewed `states.json`; a deliberate change is
+regenerated and reviewed as a diff.
+
 Trigger physics that decide the design:
 - **Resistance** is felt only while the finger *moves* through the zone. A held trigger feels nothing,
   so a resistance "kick" per shot is useless during held fire.
