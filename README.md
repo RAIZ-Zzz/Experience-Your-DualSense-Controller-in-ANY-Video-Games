@@ -14,11 +14,6 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 |---|---|---|---|---|---|---|
 | Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [v1.0 zip](../../releases/tag/star-wars-squadrons-v1.0) | [online: games/star_wars_squadrons](../../tree/online/games/star_wars_squadrons) |
 
-<img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops in Star Wars: Squadrons">
-
-*Star Wars: Squadrons, in a TIE fighter cockpit: the lightbar has turned yellow because the hull is
-damaged. It goes back to green as the hull repairs and turns red, then pulses, when the hull is low.*
-
 ## Known limitations
 
 - **On-screen button prompts are not changed.** DSX presents the DualSense to the game as an Xbox 360 pad,
