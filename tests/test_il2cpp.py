@@ -82,8 +82,7 @@ class Resolver(unittest.TestCase):
         self.assertIsNone(il.get(0, player, "health"))
 
     def test_not_set_up_yet_is_retry(self):
-        with self.assertRaises(GameNotReady):
-            Il2Cpp(game(with_class=False), Metadata(META)).classes(["Player"])
+        self.assertEqual(Il2Cpp(game(with_class=False), Metadata(META)).classes(["Player"]), {})
         with self.assertRaises(GameNotReady):
             Il2Cpp(FakeProcess(), Metadata(META)).classes(["Player"])
 

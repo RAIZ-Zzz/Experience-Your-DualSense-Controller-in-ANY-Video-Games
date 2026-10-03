@@ -93,7 +93,7 @@ class Process:
         self.handle = k32.OpenProcess(access, False, pid)
         if not self.handle:
             raise ctypes.WinError(ctypes.get_last_error())
-        self.base, self.size, self.module_name = self._main_module()
+        self.base, self.size, self.module_name, self.path = self._main_module()
 
     @classmethod
     def find(cls, names, write=False):
@@ -114,7 +114,7 @@ class Process:
             m = MODULEENTRY32W(dwSize=ctypes.sizeof(MODULEENTRY32W))
             if not k32.Module32FirstW(snap, ctypes.byref(m)):
                 raise ctypes.WinError(ctypes.get_last_error())
-            return m.modBaseAddr, m.modBaseSize, m.szModule
+            return m.modBaseAddr, m.modBaseSize, m.szModule, m.szExePath
         finally:
             k32.CloseHandle(snap)
 

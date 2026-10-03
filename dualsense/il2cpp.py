@@ -99,7 +99,8 @@ class Il2Cpp:
         return base + self.meta.strings + index
 
     def classes(self, names):
-        """{name: Class}; raises GameNotReady while the game has not created them yet."""
+        """{name: Class} for the classes the game has set up so far (it creates them on first use);
+        GameNotReady while the metadata itself is not loaded yet."""
         wanted = {name: self.meta.name_indices(name) for name in names}
         missing = [n for n, v in wanted.items() if not v]
         if missing:
@@ -117,9 +118,6 @@ class Il2Cpp:
                 c = self._class(base, a - CLASS_NAME_OFFSET, fields)
                 if c:
                     out[cls], self.base = c, base
-        missing = [n for n in names if n not in out]
-        if missing:
-            raise GameNotReady(f"classes not set up yet: {', '.join(missing)}")
         return out
 
     def _class(self, base, klass, fields):
