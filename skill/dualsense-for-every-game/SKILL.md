@@ -54,7 +54,7 @@ folder and the web cannot answer.
 - **The game's install folder is read-only for you.** Never write, copy or generate anything into it.
   Files go by kind:
   - user-facing scripts (`start.bat`, `demo.bat`, `config.toml`, reader): the game module in the
-    studio, `studio/games/<name>/games/<module>/`;
+    studio, `studio/tracks/<track>/games/<module>/`;
   - research runs worth re-running on the next build: its `research/` subfolder;
   - throwaway probes, logs and dumps: a scratch folder outside both the repo and the game.
   The only change to the game's files is the anti-cheat switch on the `online` track, which the user
@@ -213,9 +213,14 @@ Haptics (body vibration). Know the output paths before promising anything:
 ## Phase 5: ship
 
 - Work in the studio (see the repo README): `python core/tools/studio.py new <name> --track <track>` creates
-  the branch `game/<name>`, its folder `studio/games/<name>/` and a `TASKS.md`. Keep `Status:` / `Next:` and
-  the checklist in TASKS.md current; `studio.py` turns them into the STUDIO.md dashboard. Core changes go
-  to `main` first, then `studio.py sync`.
+  `games/<module>/` on that track's branch (`studio/tracks/<track>/`) with a `TASKS.md`. Keep `Status:` /
+  `Next:` and the checklist in TASKS.md current; `studio.py` turns them into the STUDIO.md dashboard. Core
+  changes go to `main` first, then `studio.py sync`.
+- Release for players (public: confirm first): a zip of only what runs, from the track worktree,
+  `git archive --prefix=<name>-dualsense/ -o <name>-dualsense.zip HEAD LICENSE dualsense games/__init__.py
+  games/<module> ':!games/<module>/research' ':!games/<module>/TASKS.md'`, then
+  `gh release create <name>-v<x.y> <zip> --target <full 40-char SHA> --notes-file notes.md` (a short SHA
+  is rejected), and link it in the main README's games table.
 - `games/<name>/` from the template, named after the full game (`star_wars_squadrons`). README sections:
   *Evidence*, (online branch) *Anti-cheat off* / *Restore the anti-cheat*, *How the hooks were found*,
   *Measured*. This is the field note that universal-modder writes at the end: `MODLOG.md` condensed.

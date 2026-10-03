@@ -4,14 +4,14 @@
       core/                     main            shared framework, tools, skill, template
       tracks/online/            online          games with anti-cheat (offline modes only) + rules
       tracks/single-player/     single-player   games without anti-cheat
-      games/<name>/             game/<name>     one game, branched from its track
 
     python core/tools/studio.py                     status of every worktree -> prints it and writes STUDIO.md
     python core/tools/studio.py new <name> --track online|single-player
-                                                    new game branch + worktree, template copied in
-    python core/tools/studio.py sync                merge main -> tracks -> games; stops at the first conflict
+                                                    games/<module>/ in that track, template copied in
+    python core/tools/studio.py sync                merge main -> tracks; stops at the first conflict
 
-Each game keeps its progress in games/<module>/TASKS.md: "Status:" and "Next:" lines plus a checklist.
+Each game is a folder games/<module>/ on its track and keeps its progress in TASKS.md there:
+"Status:" and "Next:" lines plus a checklist.
 """
 import argparse
 import re
@@ -46,19 +46,16 @@ def studio_root():
     return worktrees()[0][0].parent
 
 
-def track_of(core, branch):
-    return git(core, "config", f"branch.{branch}.studio-track", check=False) or None
-
-
 def tasks(wt):
-    """(status, next, open, done) from the first games/*/TASKS.md that isn't the template."""
+    """[(module, status, next, open, done)] from every games/*/TASKS.md except the template."""
+    out = []
     for f in sorted(wt.glob("games/*/TASKS.md")):
         if f.parent.name.startswith("_"):
             continue
         t = f.read_text(encoding="utf-8")
         field = lambda k: (re.search(rf"^{k}:\s*(.+)$", t, re.M) or [None, "-"])[1].strip()
-        return field("Status"), field("Next"), t.count("- [ ]"), t.count("- [x]")
-    return None
+        out.append((f.parent.name, field("Status"), field("Next"), t.count("- [ ]"), t.count("- [x]")))
+    return out
 
 
 def status(write=True):
@@ -68,8 +65,7 @@ def status(write=True):
         dirty = len(git(wt, "status", "--porcelain").splitlines())
         up = git(wt, "rev-list", "--left-right", "--count", f"{br}...origin/{br}", check=False)
         ahead, behind = up.split() if up else ("?", "?")
-        base = "main" if br in TRACKS else track_of(core, br)
-        stale = git(core, "rev-list", "--count", f"{br}..{base}", check=False) if base else ""
+        stale = git(core, "rev-list", "--count", f"{br}..main", check=False) if br in TRACKS else ""
         last = git(wt, "log", "-1", "--format=%cs %s")
         rows.append((wt.relative_to(wt.parent.parent) if wt != core else Path("core"), br, dirty, ahead, behind, stale, last, tasks(wt)))
 
@@ -78,11 +74,10 @@ def status(write=True):
     for folder, br, dirty, ahead, behind, stale, last, _ in rows:
         push = "not on GitHub" if ahead == "?" else (ahead if ahead != "0" else "")
         lines.append(f"| `{folder.as_posix()}` | `{br}` | {dirty or ''} | {push} | {stale if stale not in ('', '0') else ''} | {last} |")
-    games = [(folder, br, t) for folder, br, *_, t in rows if br.startswith("game/")]
-    lines += ["", "## Games", "", "| Game | Status | Next | Open / done tasks |", "|---|---|---|---|"]
-    for folder, br, t in games:
-        st, nx, op, dn = t or ("no TASKS.md", "-", 0, 0)
-        lines.append(f"| `{br.removeprefix('game/')}` | {st} | {nx} | {op} / {dn} |")
+    lines += ["", "## Games", "", "| Game | Track | Status | Next | Open / done tasks |", "|---|---|---|---|---|"]
+    for _, br, *_, games in rows:
+        for module, st, nx, op, dn in games:
+            lines.append(f"| `{module}` | `{br}` | {st} | {nx} | {op} / {dn} |")
     text = "\n".join(lines) + "\n"
     print(text)
     if write:
@@ -93,28 +88,26 @@ def status(write=True):
 
 
 def new(name, track):
-    core, root = worktrees()[0][0], studio_root()
-    branch, module = f"game/{name}", name.replace("-", "_")
-    target = root / "games" / name
-    git(core, "worktree", "add", "-b", branch, str(target), track)
-    git(core, "config", f"branch.{branch}.studio-track", track)
+    by_branch = {br: wt for wt, br in worktrees()}
+    if track not in by_branch:
+        raise SystemExit(f"no worktree for {track}")
+    target, module = by_branch[track], name.replace("-", "_")
     game_dir = target / "games" / module
-    shutil.copytree(core / "games" / "_template", game_dir)
+    if game_dir.exists():
+        raise SystemExit(f"{game_dir} already exists")
+    shutil.copytree(target / "games" / "_template", game_dir)
     (game_dir / "TASKS.md").write_text(
-        f"# Tasks: {name}\n\nStatus: started\nNext: Phase 0 of the skill (scope, anti-cheat, route)\n\n"
+        f"# Tasks: {name}\n\nStatus: started\nNext: Phase 0 of the skill (audit, research, proposal)\n\n"
         "## Todo\n- [ ] Evidence: build version + exe SHA-256 (tools/evidence.py)\n- [ ] active hook\n"
         "- [ ] health hook\n- [ ] shot hook\n- [ ] feel tuned with the player\n\n## Done\n", encoding="utf-8")
-    git(target, "add", "-A")
-    git(target, "commit", "-m", f"Start {name} from the template")
-    print(f"{branch} at {target} (track {track}); edit games/{module}/ there.")
+    git(target, "add", "--", f"games/{module}")
+    git(target, "commit", "-m", f"Start {name} from the template", "--", f"games/{module}")
+    print(f"{game_dir} on {track}; edit it there.")
 
 
 def sync():
-    core = worktrees()[0][0]
     by_branch = {br: wt for wt, br in worktrees()}
-    order = [(t, "main") for t in TRACKS if t in by_branch]
-    order += [(br, track_of(core, br)) for br in by_branch if br.startswith("game/") and track_of(core, br)]
-    for br, base in order:
+    for br, base in [(t, "main") for t in TRACKS if t in by_branch]:
         wt = by_branch[br]
         if git(wt, "status", "--porcelain"):
             raise SystemExit(f"{br}: uncommitted changes in {wt}, commit them first")

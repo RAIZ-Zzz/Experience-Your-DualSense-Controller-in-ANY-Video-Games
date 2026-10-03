@@ -12,7 +12,7 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 
 | Game | Build | Branch | Trigger (RT) | Lightbar | Download | Source |
 |---|---|---|---|---|---|---|
-| Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [v1.0 zip](../../releases/tag/star-wars-squadrons-v1.0) | [game/star-wars-squadrons](../../tree/game/star-wars-squadrons/games/star_wars_squadrons) |
+| Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [v1.0 zip](../../releases/tag/star-wars-squadrons-v1.0) | [online: games/star_wars_squadrons](../../tree/online/games/star_wars_squadrons) |
 
 <img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops in Star Wars: Squadrons">
 
@@ -30,22 +30,21 @@ damaged. It goes back to green as the hull repairs and turns red, then pulses, w
 
 `main` holds everything the two branches share. Core fixes land here first and are merged into both.
 
-Each game is developed on its own branch `game/<name>`, grown from its track. A local *studio* checks out
-every branch side by side (git worktrees), so several games can be in progress at once:
+Each game is a folder `games/<module>/` on its track's branch, with its progress in `TASKS.md`. A local
+*studio* checks out every branch side by side (git worktrees):
 
 ```
 studio/
   core/                    main             shared framework, tools, skill, template
   tracks/online/           online           anti-cheat games + rules
-  tracks/single-player/    single-player
-  games/<name>/            game/<name>      one game; progress in games/<module>/TASKS.md
+  tracks/single-player/    single-player    games without anti-cheat
   STUDIO.md                dashboard written by: python core/tools/studio.py
 ```
 
 `python core/tools/studio.py` (status + dashboard), `... new <name> --track online|single-player` (new game
-branch from the template), `... sync` (merge main -> tracks -> games, stops at the first conflict).
+folder on that track, from the template), `... sync` (merge main -> tracks, stops at the first conflict).
 To set it up from a fresh clone: `git worktree add ../tracks/online online` (and the same for
-`single-player` and each `game/<name>` branch, then `git config branch.game/<name>.studio-track <track>`).
+`single-player`), then `git config merge.ours.driver true` so each track keeps its own README.
 
 ## Shared core
 
