@@ -89,3 +89,7 @@ lessons. (Idea: universal-modder's MODLOG.md and "field note", see skill/.../ref
   (wind-up), both False ~0.1-0.5 s after; currentKicks -1 at the press, +1 about 1.5-3 s later.
   User: the kick rumble came before the kick. Moved it to canKickLand's rising edge; melee moved to
   canMeleeAttackLand by analogy (not measured yet).
+- 2026-10-04 03:13 - Melee (2 swings in the air, background recorder): isMeleeAttacking True at 48.075 and
+  50.457, canMeleeAttackLand True 0.61 s and 0.10 s later (the first maybe a held / charged swing).
+  ammoCount (durability?) stayed 14: air swings don't wear the weapon. Land-edge rumble confirmed as the
+  right moment; a hit on an enemy not recorded yet.
