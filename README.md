@@ -30,6 +30,23 @@ damaged. It goes back to green as the hull repairs and turns red, then pulses, w
 
 `main` holds everything the two branches share. Core fixes land here first and are merged into both.
 
+Each game is developed on its own branch `game/<name>`, grown from its track. A local *studio* checks out
+every branch side by side (git worktrees), so several games can be in progress at once:
+
+```
+studio/
+  core/                    main             shared framework, tools, skill, template
+  tracks/online/           online           anti-cheat games + rules
+  tracks/single-player/    single-player
+  games/<name>/            game/<name>      one game; progress in games/<module>/TASKS.md
+  STUDIO.md                dashboard written by: python core/tools/studio.py
+```
+
+`python core/tools/studio.py` (status + dashboard), `... new <name> --track online|single-player` (new game
+branch from the template), `... sync` (merge main -> tracks -> games, stops at the first conflict).
+To set it up from a fresh clone: `git worktree add ../tracks/online online` (and the same for
+`single-player` and each `game/<name>` branch, then `git config branch.game/<name>.studio-track <track>`).
+
 ## Shared core
 
 ```
