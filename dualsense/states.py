@@ -68,7 +68,8 @@ def summary(rows, examples=4):
 
 
 def save(path, rows):
-    path.write_text(json.dumps(rows, indent=1) + "\n", encoding="utf-8")
+    """One state per line, so a behaviour change is a diff of exactly the states it touches."""
+    path.write_text("[\n" + ",\n".join(json.dumps(r) for r in rows) + "\n]\n", encoding="utf-8")
 
 
 def load(path):
