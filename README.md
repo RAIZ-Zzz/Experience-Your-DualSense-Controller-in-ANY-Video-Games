@@ -43,6 +43,23 @@ left/right effect is not possible on that path (tested down to left 8 % vs right
 stronger). DSX's UDP interface exposes triggers and LEDs, not the haptic actuators. Audio-to-haptics
 (DSX+ over Bluetooth) is stereo but listens to the system output. `tools/haptics/` has the tests.
 
+## Prior art and credits
+
+This project stands on others' work; every borrowed idea is listed, with what was taken, in
+[`skill/.../references/prior-art.md`](skill/dualsense-for-every-game/references/prior-art.md). In short:
+
+- [universal-modder](https://github.com/rehan-remade/universal-modder): route ladder, MODLOG / field
+  notes, backups first, "the running game is the oracle", 3-strike circuit breaker, vertical slice.
+  Its anti-cheat guardrail is stricter than this repo's `online` branch; prior-art.md says how.
+- [awesome-game-security, reverse-engineering skill](https://github.com/gmh5225/awesome-game-security/blob/main/.claude/skills/reverse-engineering/SKILL.md):
+  record build hashes; separate runtime evidence from static inference.
+- DSX mods: [ForzaDSX](https://github.com/cosmii02/ForzaDSXlegacy) (telemetry),
+  [RDR2 – DSX](https://github.com/Shtivi/RDR2-DualSense) and
+  [Cyberpunk Enhanced DualSense Support](https://www.nexusmods.com/cyberpunk2077/mods/4156) (script hooks,
+  per-weapon triggers, real attack speed), [RE4 Remake triggers](https://www.nexusmods.com/residentevil42023/mods/5813)
+  (REFramework), and [DSX](https://github.com/Paliverse/DualSenseX) itself.
+- Star Wars: Squadrons: FearLess Cheat Engine table (first signatures), PCGamingWiki (offline EAC method).
+
 ## License
 
 MIT
