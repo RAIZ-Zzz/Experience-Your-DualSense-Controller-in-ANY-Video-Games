@@ -70,3 +70,16 @@ lessons. (Idea: universal-modder's MODLOG.md and "field note", see skill/.../ref
   To verify in the game: classes found at all and how long the scan takes; `ammoCount` drops by exactly 1
   per shot (also shotgun) and not on reload/mag check; `isJammed` vs `isJammedThisMag`; gunType values;
   `shotCount` as a cross-check.
+- 2026-10-04 02:10-02:13 - First `watch.bat` run in the real game (runtime evidence; user played the prologue
+  to the TT-33, fired, jammed, reloaded, checked the mag, paused):
+  - All four classes found read-only on Unity 6000.3; GunHandler/Gun picked up by the 10 s rescan once the
+    player had a gun (`gun: None` before).
+  - `paused` follows the pause menu; `health 80.0 / baseHealth 100.0`; `dead False`. No hit seen yet.
+  - Pistol: `ammoCount` 9 → 0, exactly -1 per shot, `shotCount` +1 in lockstep (9 shots = 9 + 9).
+    `gunType` 0 = pistol (enum order confirmed for value 0 only).
+  - Jam: the 3rd shot set `isJammed True` (ammo 6); clearing it shows `isReloading True`, then
+    `isJammed False` with ammo still 6. `isJammed` is the right field.
+  - Reload: `isReloading True`, ammo 0 → 8 inside it; mag check: `isCheckingAmmo True`, ammo unchanged.
+    Neither would count as a shot.
+  - Odd: shots 8 and 9 were 11 ms apart (02:13:05.541 / .552), both counted by the game's own `shotCount`.
+    Asked the user whether that was a double tap.
