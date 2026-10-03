@@ -8,7 +8,7 @@ Game state is read from (and lightly hooked into) the running game's memory; eff
 **Everything here is for offline play only.** Hooking a game while it is online, or while its
 anti-cheat runs, is never supported: the memory layer refuses to attach while an anti-cheat is running.
 
-## Supported games
+## Games that have been applied with the skill
 
 | Game | Build | Branch | Trigger (RT) | Lightbar | Scripts |
 |---|---|---|---|---|---|
