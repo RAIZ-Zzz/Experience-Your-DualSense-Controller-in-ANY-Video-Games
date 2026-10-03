@@ -6,7 +6,7 @@ controller = 0         # DSX controller index
 resend_seconds = 1.0   # re-send the current effect this often so DSX stays in sync
 
 [loop]
-hz = 200               # how often the shot counter is checked; higher = pulse closer to the shot
+hz = 200               # how often the ammo count is read; higher = pulse closer to the shot
 
 [game]
 # Exe name(s) of the running game.
@@ -22,7 +22,46 @@ pulse_break = 0.02     # minimum rest between two pulses, so fast shots never bl
 base_start = 2         # between shots: light resistance from this point of the pull (0-9) ...
 base_force = 1         # ... with this force (0-8), the same at any energy; 0 = none
 
-[hit]                  # hull damage -> lightbar flash
+# Per weapon type (the game's Gun.gunType): keys here override [fire]. Empty or jammed gun: no resistance.
+# First guesses, tuned with the player; only the guns actually picked up get felt, the rest keep these.
+[weapons.pistol]       # TT-33, OTs-20: a short crisp knock
+pulse_strength = 6
+pulse_frequency = 20
+pulse_seconds = 0.06
+
+[weapons.revolver]     # Magnum: one heavy kick, stiffer pull
+pulse_strength = 8
+pulse_frequency = 10
+pulse_seconds = 0.12
+base_start = 3
+base_force = 3
+
+[weapons.shotgun]      # pump / double barrel: the strongest kick and pull
+pulse_strength = 8
+pulse_frequency = 8
+pulse_seconds = 0.15
+base_start = 3
+base_force = 4
+
+[weapons.smg]          # MP5, PP-91: one knock per real shot at its fire rate
+pulse_strength = 6
+pulse_frequency = 25
+
+[weapons.assaultRifle] # SR-3M
+pulse_strength = 7
+pulse_frequency = 20
+
+[weapons.rifle]        # OTs-48 sniper: heavy single shot
+pulse_strength = 8
+pulse_frequency = 10
+pulse_seconds = 0.12
+base_start = 3
+base_force = 3
+
+[weapons.melee]        # no shots: plain trigger
+base_force = 0
+
+[hit]                  # health drop -> lightbar flash
 min_drop = 0.01        # hull fraction lost in one frame that counts as a hit
 
 [lightbar]             # hull -> lightbar colour while flying (menus keep the DSX profile colour)

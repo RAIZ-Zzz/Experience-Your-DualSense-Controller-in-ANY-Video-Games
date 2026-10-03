@@ -1,0 +1,71 @@
+"""Iron Blight reader logic on scripted snapshots (no game needed); config parses with every weapon profile."""
+import tomllib
+import unittest
+from pathlib import Path
+
+from dualsense.dsx import Mode
+from dualsense.effects import Effects
+from games.iron_blight.reader import IronBlightReader
+
+GUN, OTHER = 0x1000, 0x2000
+CFG = tomllib.loads((Path(__file__).parent.parent / "games/iron_blight/config.toml").read_text(encoding="utf-8"))
+
+
+def snap(ammo, gun=GUN, **kw):
+    s = dict(health=80.0, base_health=100.0, dead=False, paused=False, gun=gun, ammo=ammo, weapon="pistol",
+             jammed=False, melee=False, reloading=False, checking=False, shot_count=0)
+    return s | kw
+
+
+class Scripted(IronBlightReader):
+    def __init__(self, snaps):
+        super().__init__(["x.exe"], clock=lambda: 0.0)
+        self.snaps = iter(snaps)
+        self.proc = object()
+
+    def snapshot(self, now):
+        return next(self.snaps)
+
+
+def states(*snaps):
+    r = Scripted(snaps)
+    return [r._read(0.0) for _ in snaps]
+
+
+class Shots(unittest.TestCase):
+    def test_each_round_fired_is_one_shot(self):
+        self.assertEqual([s.shots for s in states(snap(8), snap(7), snap(7), snap(5))], [0, 1, 0, 2])
+
+    def test_reload_and_mag_check_are_not_shots(self):
+        seq = states(snap(3), snap(0, reloading=True), snap(8, reloading=True), snap(8), snap(1, checking=True))
+        self.assertEqual([s.shots for s in seq], [0] * 5)
+
+    def test_switching_guns_resets_the_count(self):
+        self.assertEqual([s.shots for s in states(snap(8), snap(2, gun=OTHER), snap(1, gun=OTHER))], [0, 0, 1])
+
+    def test_paused_or_dead_is_not_playing(self):
+        a, b = states(snap(8), snap(7, paused=True))
+        self.assertTrue(a.in_flight)
+        self.assertEqual((b.in_flight, b.shots), (False, 0))
+        self.assertFalse(states(snap(8, dead=True))[0].in_flight)
+
+
+class Trigger(unittest.TestCase):
+    def test_empty_or_jammed_is_slack_melee_never(self):
+        self.assertEqual([s.slack for s in states(snap(1), snap(0), snap(5, jammed=True))], [False, True, True])
+        self.assertFalse(states(snap(0, melee=True, weapon="melee"))[0].slack)
+        fx = Effects(CFG)
+        self.assertEqual(fx.update(states(snap(0))[0], 5.0).mode, Mode.NORMAL)
+
+    def test_health_fraction_and_weapon(self):
+        s = states(snap(8, weapon="shotgun"))[0]
+        self.assertEqual((s.hull, s.weapon), (0.8, "shotgun"))
+        self.assertIsNone(states(snap(None, gun=None, weapon=None))[0].weapon)
+
+    def test_every_weapon_profile_uses_known_keys(self):
+        for name, profile in CFG["weapons"].items():
+            self.assertLessEqual(set(profile), set(CFG["fire"]), name)
+
+
+if __name__ == "__main__":
+    unittest.main()

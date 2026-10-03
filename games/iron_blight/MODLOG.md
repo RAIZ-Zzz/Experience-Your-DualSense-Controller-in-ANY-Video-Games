@@ -20,13 +20,17 @@ lessons. (Idea: universal-modder's MODLOG.md and "field note", see skill/.../ref
 | `global-metadata.dat` | 13989020 | 2026-10-02 | `c5bae9eacbbeb610f66ef7817f703ef8e4c0a325df584ad68ec8d72f70e6f301` |
 
 ## Route
-- Chosen: external hooks (this framework), function addresses located by IL2CPP method names.
+- Chosen: **read-only memory polling, no hooks** (user's call 2026-10-04): `dualsense/il2cpp.py` finds
+  classes, field offsets and static singletons by name in the running game; hooks only as a fallback for a
+  state that has no field.
 - Why the cheaper routes don't work:
   - Official telemetry: none.
   - Mod loader: none installed and no community mod for this game; BepInEx/MelonLoader would need files
     in the game folder, and their Unity 6000.3 IL2CPP support is unverified.
-- Core change needed: `dualsense/memory.py` scans/hooks only the main module, which here is a 667 KB stub;
-  the game code is in `GameAssembly.dll`.
+- Why no dumper: metadata v39 is not supported by upstream Il2CppDumper (only third-party forks). The
+  runtime resolver needs none and survives updates that keep the names.
+- Why polling is enough here (unlike Squadrons' energy): ammo is an integer per gun, one round per shot;
+  MP5 ~13 shots/s = 75 ms apart vs a 5 ms read loop.
 
 ## Static inference (metadata strings only, not yet seen running)
 - Candidate shot code: `ShootGun`, `TryShoot` (also `jammedTryShoot`, `reloadingTryShoot`), `OnFire`.
@@ -54,3 +58,15 @@ lessons. (Idea: universal-modder's MODLOG.md and "field note", see skill/.../ref
 <!-- date - what was tried - real output - conclusion. Dead ends too; stop after 3 identical failures. -->
 - 2026-10-04 - Phase 0 audit + research done, design chosen. `studio.py new "Iron Blight"` made a folder
   with a space; renamed to `iron_blight` and fixed `studio.py` on main (273f95a).
+- 2026-10-04 - Parsed metadata v39 by hand (header = 31 (offset, size, count) triples; typedef 76 bytes,
+  field 10 bytes, method 30 bytes). Static inference, to be checked with `watch.bat`:
+  - `Player`: static `instance`; `health`, `baseHealth`, `<IsDead>k__BackingField` (MonoBehaviour)
+  - `GunHandler`: static `instance`; `currentGun`, `isReloading`, `isCheckingAmmo`, `shotCount` (MonoBehaviour)
+  - `Gun` (: AbstractInventoryItem, no subclasses): `ammoCount`, `gunType`, `isJammed`, `isJammedThisMag`,
+    `isMelee`, `isAutomatic`, `isPumpAction`, `isRevolver`, `rof`, `projectilesPerShot`
+  - `MainMenu`: static `<instance>k__BackingField`; `isPaused`
+  - enum `Type` (gunType): pistol, shotgun, smg, rifle, revolver, melee, assaultRifle (values assumed 0..6)
+- 2026-10-04 - Reader written (read-only), core il2cpp.py tested against a fake process only.
+  To verify in the game: classes found at all and how long the scan takes; `ammoCount` drops by exactly 1
+  per shot (also shotgun) and not on reload/mag check; `isJammed` vs `isJammedThisMag`; gunType values;
+  `shotCount` as a cross-check.
