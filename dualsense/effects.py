@@ -18,6 +18,7 @@ class GameState:
     shots: int = 0                    # shots the player fired since the previous read
     weapon: str | None = None         # key into config [weapons.<name>] (overrides [fire]), None = [fire]
     slack: bool = False               # weapon can't fire (empty, jammed): no resistance between shots
+    bumps: tuple[str, ...] = ()       # other body events since the previous read (melee, kick): config [bumps.<name>]
 
 
 class Effects:
@@ -53,6 +54,11 @@ class Effects:
             self.rumble_end = now + min(f.get("rumble_seconds", 0.0), (now - self.shot_at) * f["pulse_share"])
             self.rumble_level = (f.get("rumble_left", 0.0), f.get("rumble_right", 0.0))
             self.shot_at = now
+        for name in state.bumps:                         # grip rumble only; the trigger is not involved
+            b = self.cfg.get("bumps", {}).get(name)
+            if b:
+                self.rumble_end = now + b.get("rumble_seconds", 0.0)
+                self.rumble_level = (b.get("rumble_left", 0.0), b.get("rumble_right", 0.0))
 
         h = state.hull
         if h is not None and self.prev_hull is not None and self.prev_hull - h >= self.cfg["hit"]["min_drop"]:
