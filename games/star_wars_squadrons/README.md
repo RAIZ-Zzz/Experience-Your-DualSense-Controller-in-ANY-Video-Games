@@ -2,6 +2,10 @@
 
 EA app build **1.0.10.39591**, PC. Single-player only: Story and Practice.
 
+<img src="../../docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops">
+
+*The lightbar follows the hull: yellow here after taking damage in a TIE fighter.*
+
 ## Evidence
 
 | File | Size | Date | SHA-256 |
