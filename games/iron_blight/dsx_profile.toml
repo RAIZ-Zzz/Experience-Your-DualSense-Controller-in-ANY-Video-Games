@@ -4,9 +4,9 @@
 # Apply: close DSX, run apply-dsx-profile.bat, start DSX.
 # Anything changed in the DSX UI for this profile must also go here, or the next apply undoes it.
 
-dsx_dir = 'C:\Program Files (x86)\Steam\steamapps\common\DSX\Main_v3_Beta'   # TODO your DSX folder
+dsx_dir = 'D:\steam\steamapps\common\DSX\Main_v3_Beta'
 base_profile = "Default Profile"
-name = "TODO Game Name"
+name = "Iron Blight"
 
 [controller_general]
 ActiveVirtualDevice = "XBOX_360"     # most PC games only understand Xbox pads
