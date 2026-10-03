@@ -85,12 +85,14 @@ def playing(s):
 
 
 def can_fire(s):
-    return playing(s) and s["hand"] == "gun" and s["weapon"] != "melee" and s["ammo"] == "loaded" and not s["jammed"]
+    return (playing(s) and s["hand"] == "gun" and s["weapon"] != "melee" and s["ammo"] == "loaded"
+            and not s["jammed"] and s["action"] == "none")
 
 
 # The design the user chose, as rules every simulated output must follow.
 INVARIANTS = [
-    ("RT resistance only with a loaded, unjammed gun in hand (pulse instead on the shot frame)",
+    ("RT resistance only with a gun in hand that can fire now: loaded, not jammed, not reloading or checking"
+     " (pulse instead on the shot frame)",
      lambda s, o: o["rt"].startswith("RESISTANCE") == (can_fire(s) and s["event"] != "shot")),
     ("RT pulse exactly on a shot",
      lambda s, o: o["rt"].startswith("AUTOMATIC_GUN") == (playing(s) and s["event"] == "shot")),

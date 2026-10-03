@@ -49,7 +49,7 @@ class Shots(unittest.TestCase):
         seq = states(snap(7), snap(6, jammed=True), snap(6, jammed=True, reloading=True),
                      snap(6, reloading=True), snap(6))
         self.assertEqual([s.shots for s in seq], [0, 1, 0, 0, 0])
-        self.assertEqual([s.slack for s in seq], [False, True, True, False, False])
+        self.assertEqual([s.slack for s in seq], [False, True, True, True, False])     # clearing = reloading
 
     def test_kick_rumbles_when_it_lands_not_when_pressed(self):
         # the in-game trace of 03:03:27: press, 0.42 s wind-up, land window, done

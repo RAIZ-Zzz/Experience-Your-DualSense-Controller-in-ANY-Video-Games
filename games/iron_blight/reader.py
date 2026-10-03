@@ -128,8 +128,9 @@ class IronBlightReader:
         else:
             self.gun = self.ammo = None
         # slack = plain trigger: no gun in hand (holstered: GunHandler.instance is null; while holstering:
-        # isSelected False), or a gun that can't fire (empty, jammed); melee has its own profile
-        slack = not gun or s.get("selected") is False or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
+        # isSelected False), or a gun that can't fire now (empty, jammed, reloading, mag check); melee has its own
+        slack = not gun or s.get("selected") is False or (not s["melee"] and (
+            s["ammo"] == 0 or bool(s["jammed"]) or bool(s["reloading"]) or bool(s["checking"])))
         # body events when the blow lands, not when the button is pressed: measured 03:02-03:03, canKickLand
         # turns True 0.42 s after isKicking (the wind-up). Melee assumed alike (canMeleeAttackLand), not measured.
         bumps = tuple(name for name, key in (("kick", "kick_land"), ("melee", "melee_land"))
