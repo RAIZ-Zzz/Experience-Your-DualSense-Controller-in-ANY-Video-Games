@@ -168,7 +168,7 @@ Haptics (body vibration). Know the output paths before promising anything:
 - `games/<name>/` from the template, named after the full game (`star_wars_squadrons`). README sections:
   *Evidence*, (online branch) *Anti-cheat off* / *Restore the anti-cheat*, *How the hooks were found*,
   *Measured*. This is the field note that universal-modder writes at the end: `MODLOG.md` condensed.
-- Add the game to the main README's *Supported games* table, with a photo of the effect if the user has
+- Add the game to the main README's *Games that have been applied with the skill* table, with a photo of the effect if the user has
   one (`docs/images/`).
 - Tests: pure logic (effects, picker), the hook executed in the test process itself (catches encoding
   and off-by-one bugs; it caught two), and "game closing" fakes.
