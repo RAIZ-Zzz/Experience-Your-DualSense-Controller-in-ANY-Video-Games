@@ -10,9 +10,9 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 
 ## Games that have been applied with the skill
 
-| Game | Build | Branch | Trigger (RT) | Lightbar | Scripts |
-|---|---|---|---|---|---|
-| Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [games/star_wars_squadrons](../../tree/online/games/star_wars_squadrons) |
+| Game | Build | Branch | Trigger (RT) | Lightbar | Download | Source |
+|---|---|---|---|---|---|---|
+| Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [v1.0 zip](../../releases/tag/star-wars-squadrons-v1.0) | [game/star-wars-squadrons](../../tree/game/star-wars-squadrons/games/star_wars_squadrons) |
 
 <img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops in Star Wars: Squadrons">
 
