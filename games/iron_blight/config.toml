@@ -12,51 +12,66 @@ hz = 200               # how often the ammo count is read; higher = pulse closer
 # Exe name(s) of the running game.
 process_names = ["Iron Blight.exe"]   # the running game exe (Task Manager -> Details)
 
-[fire]                 # RT - primary weapons: one vibration pulse per shot the game fires
-pulse_strength = 8     # pulse strength (0-8), the same for every shot
-pulse_frequency = 12   # vibration speed inside a pulse; low = a knock, high = a buzz (keep < 40)
-pulse_seconds = 0.12   # pulse length for a shot after a pause (tap, single shots at empty) ...
+[fire]                 # every shot: one RT trigger pulse + one kick of the right grip (Xbox right motor via DSX)
+pulse_strength = 6     # RT pulse strength (0-8)
+pulse_frequency = 20   # vibration speed inside a pulse; low = a knock, high = a buzz (keep < 40)
+pulse_seconds = 0.1    # pulse length for a shot after a pause (tap, single shots at empty) ...
 pulse_share = 0.5      # ... capped at this share of the gap since the previous shot, so held fire
                        # (e.g. 0.15 s apart -> 0.075 s pulses) stays one knock per shot
 pulse_break = 0.02     # minimum rest between two pulses, so fast shots never blur together
 base_start = 2         # between shots: light resistance from this point of the pull (0-9) ...
-base_force = 1         # ... with this force (0-8), the same at any energy; 0 = none
+base_force = 1         # ... with this force (0-8); none while the gun is empty or jammed
+rumble_left = 0.0      # grip kick per shot, left / right motor 0-1 (the game sends no rumble itself)
+rumble_right = 0.5
+rumble_seconds = 0.1   # kick length, capped by pulse_share like the RT pulse
 
-# Per weapon type (the game's Gun.gunType): keys here override [fire]. Empty or jammed gun: no resistance.
-# First guesses, tuned with the player; only the guns actually picked up get felt, the rest keep these.
-[weapons.pistol]       # TT-33, OTs-20: a short crisp knock
+# Per weapon type (the game's Gun.gunType): keys here override [fire]. Pistol light ... shotgun heaviest.
+# Only the guns actually picked up get felt; the rest keep these first guesses.
+[weapons.pistol]       # TT-33, OTs-20: small and short
+pulse_strength = 4
+pulse_frequency = 25
+pulse_seconds = 0.08
+rumble_right = 0.35
+rumble_seconds = 0.08
+
+[weapons.smg]          # MP5, PP-91: small, one knock per real shot at its fire rate
+pulse_strength = 4
+pulse_frequency = 25
+rumble_right = 0.4
+rumble_seconds = 0.06
+
+[weapons.assaultRifle] # SR-3M
 pulse_strength = 6
 pulse_frequency = 20
-pulse_seconds = 0.06
+rumble_right = 0.55
+rumble_seconds = 0.07
 
 [weapons.revolver]     # Magnum: one heavy kick, stiffer pull
 pulse_strength = 8
 pulse_frequency = 10
-pulse_seconds = 0.12
-base_start = 3
-base_force = 3
-
-[weapons.shotgun]      # pump / double barrel: the strongest kick and pull
-pulse_strength = 8
-pulse_frequency = 8
 pulse_seconds = 0.15
 base_start = 3
-base_force = 4
-
-[weapons.smg]          # MP5, PP-91: one knock per real shot at its fire rate
-pulse_strength = 6
-pulse_frequency = 25
-
-[weapons.assaultRifle] # SR-3M
-pulse_strength = 7
-pulse_frequency = 20
+base_force = 3
+rumble_right = 0.85
+rumble_seconds = 0.15
 
 [weapons.rifle]        # OTs-48 sniper: heavy single shot
 pulse_strength = 8
 pulse_frequency = 10
-pulse_seconds = 0.12
+pulse_seconds = 0.15
 base_start = 3
 base_force = 3
+rumble_right = 0.85
+rumble_seconds = 0.15
+
+[weapons.shotgun]      # pump / double barrel: the strongest kick and pull
+pulse_strength = 8
+pulse_frequency = 8
+pulse_seconds = 0.2
+base_start = 3
+base_force = 4
+rumble_right = 1.0
+rumble_seconds = 0.2
 
 [weapons.melee]        # no shots: plain trigger
 base_force = 0
