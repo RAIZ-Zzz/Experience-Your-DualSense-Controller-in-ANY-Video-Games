@@ -16,6 +16,8 @@ class GameState:
     energy: float | None = None       # weapon energy / ammo 0..1, None = unknown
     hull: float | None = None         # health 0..1, None = unknown
     shots: int = 0                    # shots the player fired since the previous read
+    weapon: str | None = None         # key into config [weapons.<name>] (overrides [fire]), None = [fire]
+    slack: bool = False               # weapon can't fire (empty, jammed): no resistance between shots
 
 
 class Effects:
@@ -35,11 +37,12 @@ class Effects:
         """-> RT effect, driven by the shots the game fires (state.shots, from its per-shot code).
         Every shot = exactly one vibration pulse. The pulse lasts pulse_seconds, but never more than
         pulse_share of the time since the previous shot, so held fire stays one distinct knock per shot at
-        any fire rate instead of blurring into a buzz. Between shots: a light, constant resistance."""
+        any fire rate instead of blurring into a buzz. Between shots: a light, constant resistance, none while
+        state.slack (the last shot's pulse still plays out). A weapon's [weapons.<name>] keys override [fire]."""
         if not (state.attached and state.in_flight):
             self.prev_hull = None
             return NORMAL
-        f = self.cfg["fire"]
+        f = self.cfg["fire"] | self.cfg.get("weapons", {}).get(state.weapon, {})
         if state.shots:
             end = self.pulse_start + self.pulse
             # keep pulses apart: a shot mid-pulse cuts it and starts after a break; a shot just after one
@@ -55,7 +58,9 @@ class Effects:
 
         if self.pulse_start <= now < self.pulse_start + self.pulse:
             return TriggerEffect.auto_gun(0, f["pulse_strength"], f["pulse_frequency"])
-        return TriggerEffect.resistance(f["base_start"], f["base_force"]) if f["base_force"] > 0 else NORMAL
+        if state.slack or f["base_force"] <= 0:
+            return NORMAL
+        return TriggerEffect.resistance(f["base_start"], f["base_force"])
 
     def lightbar(self, state, now):
         """Lightbar (r, g, b) from hull, or None to leave the DSX profile's LED alone.

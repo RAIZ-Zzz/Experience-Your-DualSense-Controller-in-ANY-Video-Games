@@ -59,6 +59,19 @@ class TriggerEffects(unittest.TestCase):
     def test_no_shot_no_vibration(self):
         self.assertTrue(all(e.mode != Mode.AUTOMATIC_GUN for e in self.frames(0.5, [0] * 10)))
 
+    def test_weapon_profile_overrides_fire(self):
+        cfg = CFG | {"weapons": {"shotgun": {"pulse_strength": 3, "base_force": 5}}}
+        fx = Effects(cfg)
+        self.assertEqual(fx.update(GameState(**FLYING, weapon="shotgun"), 0.0).params[1], 5)
+        self.assertEqual(fx.update(GameState(**FLYING, weapon="shotgun", shots=1), 1.0).params[1], 3)
+        self.assertEqual(Effects(cfg).update(GameState(**FLYING, weapon="pistol"), 0.0),   # no profile: [fire]
+                         Effects(CFG).update(GameState(**FLYING), 0.0))
+
+    def test_slack_drops_resistance_after_the_last_pulse(self):
+        fx = Effects(CFG)
+        self.assertEqual(fx.update(GameState(**FLYING, shots=1, slack=True), 1.0).mode, Mode.AUTOMATIC_GUN)
+        self.assertEqual(fx.update(GameState(**FLYING, slack=True), 2.0).mode, Mode.NORMAL)
+
 
 class Lightbar(unittest.TestCase):
     def rgb(self, hull, now=10.0):
