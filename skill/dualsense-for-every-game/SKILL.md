@@ -1,6 +1,6 @@
 ---
 name: dualsense-for-every-game
-description: Add DualSense adaptive triggers, lightbar (and haptics, where possible) to a PC game that has no PS5 controller support, driven by live game state read from memory and sent through DSX. Use when the user wants PS5 / DualSense effects in a specific PC game, says "/dualsense-for-every-game", asks to make triggers react to shots / ammo / health in a game, or asks to add a new game to the "Experience Your DualSense Controller in ANY Video Game" framework. Offline / single-player only.
+description: Add DualSense adaptive triggers, lightbar (and haptics, where possible) to a PC game that has no PS5 controller support, driven by live game state read from memory and sent through DSX. Use when the user wants PS5 / DualSense effects in a specific PC game, says "/dualsense-for-every-game", asks to make triggers react to shots / ammo / health in a game, or asks to add a new game to the "Experience Your DualSense Controller in ANY Video Game" framework. Two tracks: single-player (memory hooks, anti-cheat off) and online (official telemetry, own input or audio only - never game memory).
 ---
 
 # DualSense for every game
