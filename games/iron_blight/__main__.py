@@ -1,10 +1,13 @@
-"""Iron Blight -> DualSense. Options: --demo, --watch (python -m games.iron_blight -h)."""
+"""Iron Blight -> DualSense. Options: --demo, --watch, --states (python -m games.iron_blight -h)."""
+import tempfile
 import time
 from pathlib import Path
 
 from dualsense.bridge import cli
 
 from .reader import IronBlightReader
+
+LOG = Path(tempfile.gettempdir()) / "iron_blight_watch.log"     # outside the repo and the game folder
 
 
 def add_watch(ap):
@@ -27,6 +30,8 @@ def add_watch(ap):
         if not args.watch:
             return False
         reader, last = IronBlightReader(cfg["game"]["process_names"], time.monotonic), "start"
+        log = open(LOG, "a", encoding="utf-8")                # same lines as the window, for whoever debugs
+        print(f"also writing to {LOG}")
         try:
             while True:
                 try:
@@ -36,7 +41,10 @@ def add_watch(ap):
                     reader.close()
                     time.sleep(2)
                 if s != last:
-                    print(f"[{time.strftime('%H:%M:%S')}.{int(time.time() * 1000) % 1000:03d}] {s}")
+                    line = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}.{int(time.time() * 1000) % 1000:03d}] {s}"
+                    print(line)
+                    log.write(line + "\n")
+                    log.flush()
                     last = s
                 time.sleep(0.005)
         except KeyboardInterrupt:
