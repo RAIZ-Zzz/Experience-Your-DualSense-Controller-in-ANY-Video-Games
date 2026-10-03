@@ -105,7 +105,11 @@ class IronBlightReader:
         return s
 
     def _read(self, now):
-        s = self.snapshot(now)
+        return self.replay(self.snapshot(now))
+
+    def replay(self, s):
+        """GameState from one snapshot (dict from snapshot(), or None); keeps what it needs from the previous
+        one. Also used to simulate every state (states.py) without the game."""
         if s is None:
             self.gun = self.ammo = None
             self.prev = {}

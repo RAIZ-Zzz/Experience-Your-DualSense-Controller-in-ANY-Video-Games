@@ -10,8 +10,20 @@ from .reader import IronBlightReader
 def add_watch(ap):
     ap.add_argument("--watch", action="store_true",
                     help="print the game values read (read-only) whenever they change; nothing sent to DSX")
+    ap.add_argument("--states", action="store_true",
+                    help="simulate every game state, write states.json, print outputs grouped and rule breaks")
 
     def handle(args, cfg):
+        if args.states:
+            from dualsense import states as S
+            from .states import INVARIANTS, JSON, all_rows
+            rows = all_rows(cfg)
+            S.save(JSON, rows)
+            print(S.summary(rows))
+            bad = S.violations(rows, INVARIANTS)
+            print(f"\n{len(bad)} rule breaks" + "".join(f"\n  {st}\n    breaks: {rule}" for st, rule in bad[:40]))
+            print(f"\nwrote {JSON}")
+            return True
         if not args.watch:
             return False
         reader, last = IronBlightReader(cfg["game"]["process_names"], time.monotonic), "start"
