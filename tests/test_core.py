@@ -82,6 +82,15 @@ class TriggerEffects(unittest.TestCase):
         fx.update(GameState(**FLYING, shots=1), 1.0)
         self.assertEqual(fx.rumble(GameState(**FLYING), 1.0), (0.0, 0.0))
 
+    def test_bump_rumbles_without_touching_the_trigger(self):
+        cfg = CFG | {"bumps": {"kick": {"rumble_left": 0.7, "rumble_right": 0.7, "rumble_seconds": 0.15}}}
+        fx = Effects(cfg)
+        rt = fx.update(GameState(**FLYING, bumps=("kick",)), 1.0)
+        self.assertEqual(rt, Effects(CFG).update(GameState(**FLYING), 1.0))       # same resistance, no pulse
+        self.assertEqual(fx.rumble(GameState(**FLYING), 1.1), (0.7, 0.7))
+        self.assertEqual(fx.rumble(GameState(**FLYING), 1.2), (0.0, 0.0))
+        Effects(CFG).update(GameState(**FLYING, bumps=("unknown",)), 1.0)          # not configured: ignored
+
     def test_slack_drops_resistance_after_the_last_pulse(self):
         fx = Effects(CFG)
         self.assertEqual(fx.update(GameState(**FLYING, shots=1, slack=True), 1.0).mode, Mode.AUTOMATIC_GUN)
