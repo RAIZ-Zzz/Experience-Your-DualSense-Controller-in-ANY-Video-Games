@@ -1,6 +1,6 @@
 ---
 name: dualsense-for-every-game
-description: Add DualSense adaptive triggers, lightbar (and haptics, where possible) to a PC game that has no PS5 controller support, driven by live game state read from memory and sent through DSX. Use when the user wants PS5 / DualSense effects in a specific PC game, says "/dualsense-for-every-game", asks to make triggers react to shots / ammo / health in a game, or asks to add a new game to the "Experience Your DualSense Controller in ANY Video Game" framework. Offline play only: games without anti-cheat (single-player branch) or games with online modes and anti-cheat, played only in their offline modes with the anti-cheat switched off (online branch).
+description: Add DualSense adaptive triggers, lightbar (and haptics, where possible) to a PC game that has no PS5 controller support, driven by live game state read from memory and sent through DSX. Takes the game's install folder as its argument ("/dualsense-for-every-game D:\Games\MyGame"); asks for it first if missing. Use when the user wants PS5 / DualSense effects in a specific PC game, says "/dualsense-for-every-game", asks to make triggers react to shots / ammo / health in a game, or asks to add a new game to the "Experience Your DualSense Controller in ANY Video Game" framework. Offline play only: games without anti-cheat (single-player branch) or games with online modes and anti-cheat, played only in their offline modes with the anti-cheat switched off (online branch).
 ---
 
 # DualSense for every game
@@ -23,6 +23,13 @@ The work alternates between you (code, memory analysis) and the user (holding th
 Most of the time goes into the loop *user does a scripted thing in game → you measure → you change one
 thing*. Plan for that from the start.
 
+## Input: the game's install folder
+
+The skill needs exactly one input: the folder the game is installed in (the one holding its `.exe`).
+If the user did not give it, ask for it and do nothing else until you have it. Everything else (name,
+build, store, engine, anti-cheat, genre) you find out yourself in Phase 0; ask the user only what the
+folder and the web cannot answer.
+
 ## Ground rules
 
 - **Offline only, always.** Never hook a game in an online mode or while its anti-cheat runs, and never
@@ -44,18 +51,56 @@ thing*. Plan for that from the start.
   (2–3 min) for a human to read the message and act, and correlate by timestamps instead of relying on the
   user's timing.
 - Things that leave the machine, like pushing to GitHub or installing drivers: confirm first.
+- **The game's install folder is read-only for you.** Never write, copy or generate anything into it.
+  Files go by kind:
+  - user-facing scripts (`start.bat`, `demo.bat`, `config.toml`, reader): the game module in the
+    studio, `studio/games/<name>/games/<module>/`;
+  - research runs worth re-running on the next build: its `research/` subfolder;
+  - throwaway probes, logs and dumps: a scratch folder outside both the repo and the game.
+  The only change to the game's files is the anti-cheat switch on the `online` track, which the user
+  does by following the README; you write the steps, not the files.
+- **Announce every hook before it goes in.** Before anything patches the game's memory (`--scan` only
+  reads; `--probe`, `count_calls.py`, `retspy.py`, `audio_pan.py`, `start.bat` patch), tell the user:
+  which code is hooked and why, that the game must be in an offline mode with the anti-cheat off, that the
+  patch is removed on exit, and what could go wrong (a crash of the game, no lasting change). Wait for a
+  yes. One yes covers re-running the same hook, not a new one.
 
-## Phase 0: scope and track
+## Phase 0: audit, research, proposal
 
-Ask, or find out from the files:
-1. Game, store / launcher, exact build version (prior work such as CT tables often targets another build).
-2. **Anti-cheat?** None → `single-player` branch. Yes → `online` branch, and then:
-   - Does the game have offline modes (story, practice, vs AI offline) that work without the anti-cheat?
-     If everything worth playing is online-only, stop: the game is not supported.
-   - How is the anti-cheat switched off for offline play, and how is it restored (e.g. a store's
-     "Repair")? Write both into the game's README; `ANTI_CHEAT_RULES.md` requires it.
-3. What the user wants first. Triggers are the most reliable win; lightbar is easy once health is
-   known; haptics depend on the output path (Phase 4).
+Do steps 1–2 on your own, without asking the user, and without touching the game (it need not run).
+
+1. **Audit the install folder** (read only). Report what you found and how you know it:
+   - Main executable(s), size, version resource, `tools/evidence.py` hashes.
+   - Store: `steamapps/appmanifest_*.acf` above the folder (Steam), `__Installer/` (EA app),
+     `.egstore/` (Epic), `goggame-*.info` (GOG).
+   - Engine: `*.pak` + `Engine/` (Unreal), `*_Data/` + `UnityPlayer.dll` (Unity), `*.sb`/`*.toc` (Frostbite),
+     `re_chunk_*.pak` (RE Engine), `archive/pc/` (REDengine)...
+   - **Anti-cheat**: `EasyAntiCheat/`, `*_eac.exe`, `BattlEye/`, `*BE.exe`, `vgk`, `mhypbase.dll`...
+     None → `single-player` track. Present → `online` track, see step 2.
+   - Mod loaders already installed (`dinput8.dll`, `version.dll`, `ScriptHookV.dll`, `UE4SS/`,
+     `BepInEx/`, `reframework/`) and save location.
+2. **Research the game on the web**: genre and how it plays, official telemetry, existing mods and
+   CT tables for this build, and (online track) whether offline modes exist and how others run them
+   without the anti-cheat and restore it. If everything worth playing is online-only, stop: the game is
+   not supported. Then collect what the effects will be built on, by genre:
+   - **Shooter**: the full weapon list, sorted into classes by how they fire: automatic (machine gun,
+     SMG, assault rifle), semi-auto (pistol, DMR), single heavy shot (sniper, shotgun, launcher),
+     draw-and-release (bow, crossbow), charge (energy, railgun), melee. Note fire rates where known.
+   - **Action / racing / flight**: what the triggers are for (attack, brake, throttle) and what state
+     drives them (stamina, speed, ABS, overheat).
+   - **Exploration / casual**: what is worth feeling (footsteps, terrain, interactions) and showing
+     (health, time of day, area). Here haptics and lightbar matter more than triggers.
+3. **Propose the design** and let the user choose before writing any code. Write it as a short list of
+   options per effect, each with what the user will feel and what it costs to build. For a shooter, one
+   trigger profile per weapon class, e.g.:
+   - automatic → one `AUTOMATIC_GUN` pulse per real shot + light `RESISTANCE` (the Squadrons default);
+   - semi-auto → `SEMI_AUTOMATIC_GUN` click;
+   - heavy single shot → `WEAPON` / hard `RESISTANCE` with a strong kick;
+   - bow → `BOW` (tension grows with draw);
+   - charge → rising `RESISTANCE`, `VIBRATE_TRIGGER` when full;
+   plus the lightbar source (health, ammo, team colour) and what haptics can and cannot do (Phase 4).
+   Say which game state each option needs, and whether that state needs a hook (Phase 3) or comes from
+   telemetry / an existing mod. Recommend one option per effect; the user picks, then `studio.py new`.
 4. **Route.** Take the cheapest route that reaches the effect, and write in `MODLOG.md` why the cheaper
    ones don't work (ladder adapted from universal-modder's route selection; the rungs are what existing
    DualSense mods use, see `references/prior-art.md`):
@@ -92,6 +137,8 @@ Run `python -m games.<name> --demo` (the generic `DemoReader`) so the user can j
 frequency and resistance before any reverse engineering. Tuning is in `config.toml`.
 
 ## Phase 3: find the game state
+
+Every step below that patches memory needs the hook announcement and the user's yes (ground rules).
 
 Target three hooks (see `games/_template/reader.py`): **active** (runs every frame while playing, silent
 in menus), **health** (object holds the player's health), **shot** (runs exactly once per shot).
