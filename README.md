@@ -11,13 +11,6 @@ Single-player games without anti-cheat are on [`single-player`](../../tree/singl
 |---|---|---|---|---|
 | Star Wars: Squadrons (EA app 1.0.10.39591) | Story, Practice | ✅ one pulse per shot, any ship | ✅ hull: green → red | [games/star_wars_squadrons](games/star_wars_squadrons/README.md) |
 
-<img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops">
-
-*The lightbar follows the hull: yellow here after taking damage in a TIE fighter.*
-
-Scripts for this game: [`games/star_wars_squadrons/`](games/star_wars_squadrons/) (play, demo, probe, profile)
-and [`games/star_wars_squadrons/research/`](games/star_wars_squadrons/research/) (how its hooks were found).
-
 ## Play (Squadrons)
 
 1. Switch EAC off for offline play: [games/star_wars_squadrons/README.md](games/star_wars_squadrons/README.md#anti-cheat-off-offline-only).
