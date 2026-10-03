@@ -76,6 +76,16 @@ rumble_seconds = 0.2
 [weapons.melee]        # no shots: plain trigger
 base_force = 0
 
+# Body events without a shot: grip rumble only (left / right motor 0-1), the trigger is not touched.
+[bumps.melee]          # each melee swing (club, pipe, spade, ...): weapon in the right hand
+rumble_right = 0.6
+rumble_seconds = 0.12
+
+[bumps.kick]           # each kick: the whole controller
+rumble_left = 0.7
+rumble_right = 0.7
+rumble_seconds = 0.15
+
 [hit]                  # health drop -> lightbar flash
 min_drop = 0.01        # hull fraction lost in one frame that counts as a hit
 

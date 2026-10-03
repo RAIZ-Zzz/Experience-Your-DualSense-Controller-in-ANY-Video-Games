@@ -51,6 +51,13 @@ class Shots(unittest.TestCase):
         self.assertEqual([s.shots for s in seq], [0, 1, 0, 0, 0])
         self.assertEqual([s.slack for s in seq], [False, True, True, False, False])
 
+    def test_kick_and_melee_swing_bump_once_when_they_start(self):
+        m = dict(melee=True, weapon="melee")
+        seq = states(snap(8), snap(8, kicking=True), snap(8, kicking=True), snap(8),
+                     snap(5, **m), snap(5, melee_attacking=True, **m), snap(4, melee_attacking=True, **m))
+        self.assertEqual([s.bumps for s in seq], [(), ("kick",), (), (), (), ("melee",), ()])
+        self.assertEqual(states(snap(8), snap(8, kicking=True, paused=True))[1].bumps, ())
+
     def test_switching_guns_resets_the_count(self):
         self.assertEqual([s.shots for s in states(snap(8), snap(2, gun=OTHER), snap(1, gun=OTHER))], [0, 0, 1])
 

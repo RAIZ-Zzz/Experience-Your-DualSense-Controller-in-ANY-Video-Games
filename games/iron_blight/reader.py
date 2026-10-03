@@ -2,12 +2,13 @@
 
 Everything is read by class and field name from the game's own metadata (dualsense/il2cpp.py), so an update that
 keeps the names keeps working:
-    Player.instance           health, baseHealth, IsDead
+    Player.instance           health, baseHealth, IsDead, isKicking (+ canKickLand, currentKicks for --watch)
     MainMenu.instance         isPaused
-    GunHandler.instance       currentGun, isReloading, isCheckingAmmo
+    GunHandler.instance       currentGun, isReloading, isCheckingAmmo, isMeleeAttacking (+ canMeleeAttackLand)
     currentGun (Gun)          ammoCount, gunType, isJammed, isMelee
 A shot = the selected gun's ammoCount dropping while it is not being reloaded or checked (one round per shot,
-shotguns too). Field names are static inference from the metadata until seen in the running game (--watch)."""
+shotguns too; verified with the pistol). A kick / melee swing = isKicking / isMeleeAttacking turning True
+(not yet seen in the running game)."""
 import time
 from pathlib import Path
 
@@ -32,6 +33,7 @@ class IronBlightReader:
         self.cls = {}
         self.rescan_at = 0.0
         self.gun = self.ammo = None
+        self.prev = {}            # previous snapshot, for False -> True edges
         self.retry_at = 0.0
         self.last_error = None
 
@@ -82,13 +84,18 @@ class IronBlightReader:
              "base_health": il.get(player, c["Player"], "baseHealth"),
              "dead": il.get(player, c["Player"], "<IsDead>k__BackingField"),
              "paused": il.get(menu, c["MainMenu"], "isPaused") if il.is_a(menu, c["MainMenu"]) else False,
+             "kicking": il.get(player, c["Player"], "isKicking"),
+             "kick_land": il.get(player, c["Player"], "canKickLand"),
+             "kicks_left": il.get(player, c["Player"], "currentKicks"),
              "gun": None}
         gh_cls, gun_cls = c.get("GunHandler"), c.get("Gun")
         gh = il.static(gh_cls, "instance") if gh_cls else None
         if gun_cls and il.is_a(gh, gh_cls):
             gun = il.get(gh, gh_cls, "currentGun")
             s |= {"reloading": il.get(gh, gh_cls, "isReloading"), "checking": il.get(gh, gh_cls, "isCheckingAmmo"),
-                  "shot_count": il.get(gh, gh_cls, "shotCount")}
+                  "shot_count": il.get(gh, gh_cls, "shotCount"),
+                  "melee_attacking": il.get(gh, gh_cls, "isMeleeAttacking"),
+                  "melee_land": il.get(gh, gh_cls, "canMeleeAttackLand")}
             if il.is_a(gun, gun_cls):
                 t = il.get(gun, gun_cls, "gunType")
                 s |= {"gun": gun, "ammo": il.get(gun, gun_cls, "ammoCount"),
@@ -100,6 +107,7 @@ class IronBlightReader:
         s = self.snapshot(now)
         if s is None:
             self.gun = self.ammo = None
+            self.prev = {}
             return GameState(attached=self.proc is not None)
         playing = not s["paused"] and not s["dead"]
         hull = None
@@ -116,8 +124,12 @@ class IronBlightReader:
             self.gun = self.ammo = None
         # slack = plain trigger: no gun in hand, or a gun that can't fire (empty, jammed); melee has its own profile
         slack = not gun or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
+        # body events on the moment an action starts (False -> True); the hit itself may come later (to measure)
+        bumps = tuple(name for name, key in (("kick", "kicking"), ("melee", "melee_attacking"))
+                      if s.get(key) and not self.prev.get(key))
+        self.prev = s
         return GameState(attached=True, in_flight=playing, hull=hull, shots=shots if playing else 0,
-                         weapon=s.get("weapon") if gun else None, slack=slack)
+                         weapon=s.get("weapon") if gun else None, slack=slack, bumps=bumps if playing else ())
 
     def close(self):
         """Nothing in the game to restore: this reader never writes."""
