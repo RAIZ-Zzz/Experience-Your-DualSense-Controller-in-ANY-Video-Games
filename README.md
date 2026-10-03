@@ -24,6 +24,13 @@ None yet. Star Wars: Squadrons has EAC, so it lives on the `online` branch.
 Requirements: Windows 10/11, Python 3.11+ (stdlib only for playing), DSX v3 with
 *Settings → Networking → Incoming UDP* on and virtual device **Xbox 360**.
 
+## Prior art and credits
+
+The workflow borrows from other projects (universal-modder, the awesome-game-security reverse-engineering
+skill, and existing DSX mods such as ForzaDSX, RDR2 – DSX and Cyberpunk's DualSense mods). Each idea, with
+what was taken and what was not:
+[`skill/dualsense-for-every-game/references/prior-art.md`](skill/dualsense-for-every-game/references/prior-art.md).
+
 ## License
 
 MIT
