@@ -8,6 +8,17 @@ Game state is read from (and lightly hooked into) the running game's memory; eff
 **Everything here is for offline play only.** Hooking a game while it is online, or while its
 anti-cheat runs, is never supported: the memory layer refuses to attach while an anti-cheat is running.
 
+## Supported games
+
+| Game | Build | Branch | Trigger (RT) | Lightbar | Scripts |
+|---|---|---|---|---|---|
+| Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [games/star_wars_squadrons](../../tree/online/games/star_wars_squadrons) |
+
+<img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops in Star Wars: Squadrons">
+
+*Star Wars: Squadrons, in a TIE fighter cockpit: the lightbar has turned yellow because the hull is
+damaged. It goes back to green as the hull repairs and turns red, then pulses, when the hull is low.*
+
 ## Two branches
 
 | | [`single-player`](../../tree/single-player) | [`online`](../../tree/online) |
@@ -15,7 +26,7 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 | Games | single-player games **without** anti-cheat | games **with** online modes and an anti-cheat (EAC, ...) |
 | How | hook the game, play | play **only its offline modes, with the anti-cheat switched off**, then restore it before going online |
 | Rules | offline use, otherwise free | strict: [ANTI_CHEAT_RULES.md on the online branch](../../blob/online/ANTI_CHEAT_RULES.md) |
-| Games so far | none yet | Star Wars: Squadrons ✅ triggers ✅ lightbar |
+| Games so far | none yet | Star Wars: Squadrons |
 
 `main` holds everything the two branches share. Core fixes land here first and are merged into both.
 
