@@ -15,18 +15,26 @@ from pathlib import Path
 
 
 def merge(base, overrides):
-    """Return base with overrides applied section by section; unknown keys are an error (typo guard)."""
+    """Return base with overrides applied section by section, nested sections ([a.b]) key by key too;
+    unknown keys are an error (typo guard)."""
     out = json.loads(json.dumps(base))
     for section, values in overrides.items():
         if not isinstance(values, dict):
             continue
         if section not in out:
             raise KeyError(f"DSX profile has no section '{section}'")
-        for key, value in values.items():
-            if key not in out[section]:
-                raise KeyError(f"DSX profile section '{section}' has no key '{key}'")
-            out[section][key] = value
+        _merge_into(out[section], values, section)
     return out
+
+
+def _merge_into(target, values, path):
+    for key, value in values.items():
+        if key not in target:
+            raise KeyError(f"DSX profile section '{path}' has no key '{key}'")
+        if isinstance(value, dict) and isinstance(target[key], dict):
+            _merge_into(target[key], value, f"{path}.{key}")
+        else:
+            target[key] = value
 
 
 def backup_and_write(path, text):
