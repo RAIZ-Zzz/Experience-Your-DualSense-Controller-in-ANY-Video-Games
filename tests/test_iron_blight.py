@@ -88,5 +88,20 @@ class Trigger(unittest.TestCase):
             self.assertLessEqual(set(profile), set(CFG["fire"]), name)
 
 
+class EveryState(unittest.TestCase):
+    """All enumerated states (games/iron_blight/states.py): design rules hold, and the outputs equal the
+    reviewed states.json (regenerate with python -m games.iron_blight --states after a deliberate change)."""
+
+    def test_design_rules_hold_in_every_state(self):
+        from dualsense import states as S
+        from games.iron_blight.states import INVARIANTS, all_rows
+        self.assertEqual(S.violations(all_rows(CFG), INVARIANTS), [])
+
+    def test_outputs_match_states_json(self):
+        from dualsense import states as S
+        from games.iron_blight.states import JSON, all_rows
+        self.assertEqual(all_rows(CFG), S.load(JSON), "behaviour changed: review, then rerun --states")
+
+
 if __name__ == "__main__":
     unittest.main()
