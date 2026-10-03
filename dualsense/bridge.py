@@ -22,7 +22,7 @@ def run(reader, dsx, cfg):
     effects = Effects(cfg)
     period = 1 / cfg["loop"]["hz"]
     resend = cfg["dsx"]["resend_seconds"]
-    last, last_sent, last_status, last_rumble = None, 0.0, None, 0.0
+    last, last_sent, last_status, last_rumble = None, 0.0, None, (0.0, 0.0)
     print(f"Sending to DSX at {dsx.addr[0]}:{dsx.addr[1]} - Ctrl+C to stop")
     try:
         while True:
@@ -40,15 +40,15 @@ def run(reader, dsx, cfg):
                 last, last_sent = out, now
             r = effects.rumble(state, now)
             if r != last_rumble:                             # only on change: a game's own rumble is left alone
-                rumble(r)
+                rumble(*r)
                 last_rumble = r
             time.sleep(max(0.0, period - (time.monotonic() - now)))
     except KeyboardInterrupt:
         pass
     finally:
         reader.close()
-        if last_rumble:
-            rumble(0.0)
+        if any(last_rumble):
+            rumble(0.0, 0.0)
         dsx.reset()
         print("Game code restored, triggers handed back to DSX profile.")
 

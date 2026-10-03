@@ -37,16 +37,16 @@ class _XInputVibration(ctypes.Structure):
     _fields_ = [("left", ctypes.c_ushort), ("right", ctypes.c_ushort)]
 
 
-def rumble(level):
-    """Xbox rumble 0..1 on both motors of every XInput pad (DSX's virtual pad turns it into DualSense haptics
+def rumble(left, right):
+    """Xbox rumble 0..1 per motor on every XInput pad (DSX's virtual pad turns it into DualSense haptics
     when the DSX profile has UseXboxRumble + rumble haptics on). Same as a game's own rumble call."""
     try:
         x = ctypes.WinDLL("xinput1_4")
     except OSError:
         return
-    v = int(max(0.0, min(1.0, level)) * 65535)
+    vib = _XInputVibration(*(int(max(0.0, min(1.0, v)) * 65535) for v in (left, right)))
     for i in range(4):
-        x.XInputSetState(i, ctypes.byref(_XInputVibration(v, v)))
+        x.XInputSetState(i, ctypes.byref(vib))
 
 
 class PlayerPicker:
