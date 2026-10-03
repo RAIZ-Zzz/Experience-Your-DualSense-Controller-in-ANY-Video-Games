@@ -32,7 +32,12 @@ thing*. Plan for that from the start.
   modes stop working, and restores it before playing online.
 - **Measure, don't assert.** Every claim about the game (which code runs per shot, fire rate, how the
   controller feels) comes from a run whose real output you show. Assumptions that worked in one mission
-  failed in the next (see lessons).
+  failed in the next (see lessons). In universal-modder's words: *the running game is the oracle; your
+  reading of the code is not.*
+- **Circuit breaker** (from universal-modder): after three identical failures, stop, write the dead end
+  into `MODLOG.md`, and change approach instead of retrying.
+- **Keep a `MODLOG.md`** (from universal-modder) in the game folder from the first minute: paths,
+  addresses, real outputs, dead ends, next step. It becomes the README and the lessons at the end.
 - **The user's hands are the sensor.** You cannot feel the controller. Give the user a short script of
   actions or a test `.bat`, then ask a precise question ("did rounds 1 and 2 feel left vs right?").
 - Background recorders: start the recording *before* telling the user what to do, make it long enough
@@ -51,9 +56,22 @@ Ask, or find out from the files:
      "Repair")? Write both into the game's README; `ANTI_CHEAT_RULES.md` requires it.
 3. What the user wants first. Triggers are the most reliable win; lightbar is easy once health is
    known; haptics depend on the output path (Phase 4).
+4. **Route.** Take the cheapest route that reaches the effect, and write in `MODLOG.md` why the cheaper
+   ones don't work (ladder adapted from universal-modder's route selection; the rungs are what existing
+   DualSense mods use, see `references/prior-art.md`):
+   1. **Official telemetry**: the game streams its state by itself (Forza's UDP "data out", as used by
+      ForzaDSX).
+   2. **An existing script hook / mod loader** for that game or engine: ScriptHook (RDR2 – DSX),
+      Cyber Engine Tweaks (Cyberpunk's DualSense mods), REFramework (RE4 Remake triggers), UE4SS,
+      BepInEx... The community already maps the game's state there.
+   3. **External hooks with this framework** (`dualsense/hook.py`): when nothing above exists, as for
+      Star Wars: Squadrons.
 
 ## Phase 1: environment
 
+- **Backups first** (from universal-modder): before the first modded launch, back up the game's saves
+  and write the restore path into `MODLOG.md`. On the `online` branch also write down how the
+  anti-cheat is restored.
 - DSX v3: *Incoming UDP* on (port in `%LOCALAPPDATA%\DSX\DSX_UDP_PortNumber.txt`, default 6969).
 - Virtual device **Xbox 360** for games without DualSense support. Do not switch to a virtual DualSense
   unless the game supports it (it needs a DLC, and it was involved in two BSODs; see lessons).
@@ -78,6 +96,11 @@ frequency and resistance before any reverse engineering. Tuning is in `config.to
 Target three hooks (see `games/_template/reader.py`): **active** (runs every frame while playing, silent
 in menus), **health** (object holds the player's health), **shot** (runs exactly once per shot).
 
+0. **Evidence record** (from the awesome-game-security reverse-engineering skill): `python
+   tools/evidence.py <exe>` → size and SHA-256 of the exact build into the README's *Evidence* table.
+   For every finding, say whether it is *runtime evidence* (call counts, values seen in the running game)
+   or *static inference* (only read from code), and label uncertainty caused by protection (e.g. an
+   encrypted executable whose code exists only at runtime).
 1. **Start from known signatures** (Cheat Engine tables, mods). Executables are often encrypted on disk,
    so scan the *running* process only. `--scan` must report exactly 1 match each.
 2. **Register spy** (`dualsense/hook.py`): patch one instruction to jump to a cave that stores the
@@ -91,6 +114,8 @@ in menus), **health** (object holds the player's health), **shot** (runs exactly
      sequence (idle, taps, hold to empty, recharge, switch power), then match call counts to events.
      Squadrons: 260 player shots = 260 calls of exactly one function. The other four never ran.
    - Function only reachable through a vtable: `tools/re/retspy.py` gives the callers.
+   - Save each run that found something as `games/<name>/research/*.bat` (the exact command and
+     addresses, result in a comment), so the next build can be checked by re-running them.
 4. **Player vs everyone else.** Shared code runs for AI too. Never pick "the most frequent object": that
    held in a quiet test mission and broke in a busy one. Use `PlayerPicker`: the object whose code
    runs while the player holds the button (XInput RT of DSX's virtual pad).
@@ -101,6 +126,9 @@ in menus), **health** (object holds the player's health), **shot** (runs exactly
    exit.
 
 ## Phase 4: design the feel with the user
+
+**Vertical slice first** (from universal-modder): one effect working end to end in the real game before
+the next. In Squadrons: RT pulse per shot, then the lightbar, then haptics.
 
 Iterate one variable at a time; show a frame-by-frame trace (e.g. `#` per 5 ms of pulse) of what the
 code will do before the user tests it.
@@ -119,6 +147,10 @@ What the first user settled on (Squadrons), which is a good default:
 - Lightbar hue green → yellow → red (HSV, not an RGB fade, which passes through dark olive), eased;
   a hit snaps to red and eases back in one movement; pulsing below 25 % for colour-blind readability.
 - Gyro to stick was rejected: the game has no gyro support, so it has no recentering.
+- Next idea, not built yet: **per-weapon trigger profiles**, as RDR2 – DSX and Cyberpunk's DualSense mods
+  do (a trigger mode per weapon type). In Squadrons the weapon data pointer is `[obj+0x388]` of the
+  shot object. Cyberpunk's mod also moved automatic weapons to the *real attack speed*, the same
+  conclusion as our one-pulse-per-real-shot design.
 
 Haptics (body vibration). Know the output paths before promising anything:
 - **Game rumble through Xbox emulation:** DSX maps left motor = heavy, right = light. Balanced
@@ -133,10 +165,15 @@ Haptics (body vibration). Know the output paths before promising anything:
 
 ## Phase 5: ship
 
-- `games/<name>/` from the template, README with build version, how the hooks were found, and the
-  measured numbers.
+- `games/<name>/` from the template, named after the full game (`star_wars_squadrons`). README sections:
+  *Evidence*, (online branch) *Anti-cheat off* / *Restore the anti-cheat*, *How the hooks were found*,
+  *Measured*. This is the field note that universal-modder writes at the end: `MODLOG.md` condensed.
+- Add the game to the main README's *Supported games* table, with a photo of the effect if the user has
+  one (`docs/images/`).
 - Tests: pure logic (effects, picker), the hook executed in the test process itself (catches encoding
   and off-by-one bugs; it caught two), and "game closing" fakes.
 - `python -m unittest discover tests` must pass before committing.
 
 More detail, numbers and the mistakes made along the way: [references/lessons.md](references/lessons.md).
+Where the borrowed ideas come from, and what was deliberately not borrowed:
+[references/prior-art.md](references/prior-art.md).
