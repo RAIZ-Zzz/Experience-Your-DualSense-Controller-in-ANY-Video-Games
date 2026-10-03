@@ -2,42 +2,50 @@
 
 Give PC games that never supported the PS5 controller **adaptive triggers and a live lightbar**, driven by
 what actually happens in the game: one trigger kick per shot fired, a lightbar that follows your health.
-Effects are sent to [DSX](https://store.steampowered.com/app/1812620/DSX/), which owns the controller.
+Game state is read from (and lightly hooked into) the running game's memory; effects are sent to
+[DSX](https://store.steampowered.com/app/1812620/DSX/), which owns the controller.
 
-## Two tracks, two branches
+**Everything here is for offline play only.** Hooking a game while it is online, or while its
+anti-cheat runs, is never supported: the memory layer refuses to attach while an anti-cheat is running.
 
-How a game's state may be read depends on whether the game is played online:
+## Two branches
 
 | | [`single-player`](../../tree/single-player) | [`online`](../../tree/online) |
 |---|---|---|
-| For | offline / single-player games, played with anti-cheat off | games played online, with their anti-cheat running |
-| Data source | anything: reads and hooks the game's memory | only sources the game allows: official telemetry / game-state APIs, your own controller input, the PC's audio output |
-| Game memory | read + patched (offline only; refuses to attach while EasyAntiCheat runs) | **never opened**: enforced by a test that fails on any memory / injection API |
-| Status | Star Wars: Squadrons ✅ triggers, ✅ lightbar | framework + rules + template |
+| Games | single-player games **without** anti-cheat | games **with** online modes and an anti-cheat (EAC, ...) |
+| How | hook the game, play | play **only its offline modes, with the anti-cheat switched off**, then restore it before going online |
+| Rules | offline use, otherwise free | strict: [ANTI_CHEAT_RULES.md on the online branch](../../blob/online/ANTI_CHEAT_RULES.md) |
+| Games so far | none yet | Star Wars: Squadrons ✅ triggers ✅ lightbar |
 
-Rules for the online track: [ONLINE_RULES.md on the online branch](../../blob/online/ONLINE_RULES.md).
+`main` holds everything the two branches share. Core fixes land here first and are merged into both.
 
-`main` holds the shared core only. Both tracks build on it, and core fixes land here first and are merged
-into both branches.
-
-## Shared core (`dualsense/`)
+## Shared core
 
 ```
-dsx.py        DSX UDP protocol: trigger modes, lightbar RGB, reset
-effects.py    GameState -> RT effect (one pulse per shot, adaptive length) and lightbar colour (health)
-player.py     XInput trigger read + PlayerPicker (the player's object = the one acting while you press RT)
-bridge.py     loop (read -> effects -> DSX), demo reader, CLI
-profile.py    builds a DSX controller profile from a game's dsx_profile.toml
+dualsense/
+  dsx.py          DSX UDP protocol: trigger modes, lightbar RGB, reset
+  effects.py      GameState -> RT effect (one pulse per shot, adaptive length) and lightbar colour (health)
+  player.py       XInput trigger read + PlayerPicker (the player's object = the one acting while you press RT)
+  bridge.py       loop (read -> effects -> DSX), demo reader, CLI
+  profile.py      builds a DSX controller profile from a game's dsx_profile.toml
+  memory.py       process memory: attach, read, AOB scan, write / allocate; refuses while anti-cheat runs
+  hook.py         register spy: patch an instruction to record the object it works on
+  reader.py       HookReader: game state from a few hooks (a game only declares which hook is which)
+  hooktools.py    --scan / --probe options
+games/_template/  start here for a new game (copy it on the right branch)
+tools/re/         reverse-engineering helpers (find writers, count calls, find callers, audio pan)
+tools/haptics/    tests for the haptics output paths
+skill/            Claude Code skill: the whole workflow
+tests/            python -m unittest discover tests
 ```
 
-Requirements: Windows 10/11, Python 3.11+ (stdlib), DSX v3 with *Settings → Networking → Incoming UDP* on.
-Tests: `python -m unittest discover tests`.
+Requirements: Windows 10/11, Python 3.11+ (stdlib only for playing), DSX v3 with
+*Settings → Networking → Incoming UDP* on and virtual device **Xbox 360**.
 
 ## Claude Code skill
 
-[`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md) is the full workflow
-(choosing the track, finding game state, designing the feel with the player, shipping). Copy the folder
-to `~/.claude/skills/` and run `/dualsense-for-every-game`.
+[`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md): copy the folder to
+`~/.claude/skills/` and run `/dualsense-for-every-game`.
 
 ## License
 
