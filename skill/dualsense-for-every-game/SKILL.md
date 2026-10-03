@@ -165,6 +165,10 @@ Haptics (body vibration). Know the output paths before promising anything:
 
 ## Phase 5: ship
 
+- Work in the studio (see the repo README): `python core/tools/studio.py new <name> --track <track>` creates
+  the branch `game/<name>`, its folder `studio/games/<name>/` and a `TASKS.md`. Keep `Status:` / `Next:` and
+  the checklist in TASKS.md current; `studio.py` turns them into the STUDIO.md dashboard. Core changes go
+  to `main` first, then `studio.py sync`.
 - `games/<name>/` from the template, named after the full game (`star_wars_squadrons`). README sections:
   *Evidence*, (online branch) *Anti-cheat off* / *Restore the anti-cheat*, *How the hooks were found*,
   *Measured*. This is the field note that universal-modder writes at the end: `MODLOG.md` condensed.
