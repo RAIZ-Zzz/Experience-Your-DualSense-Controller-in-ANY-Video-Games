@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0..\.."
-python -m dualsense.profile games\squadrons\dsx_profile.toml --activate %*
+python -m dualsense.profile games\_template\dsx_profile.toml --activate %*
 pause
