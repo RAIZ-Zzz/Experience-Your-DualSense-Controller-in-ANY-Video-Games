@@ -91,11 +91,13 @@ def new(name, track):
     by_branch = {br: wt for wt, br in worktrees()}
     if track not in by_branch:
         raise SystemExit(f"no worktree for {track}")
-    target, module = by_branch[track], name.replace("-", "_")
+    target, module = by_branch[track], re.sub(r"[^0-9a-z]+", "_", name.lower()).strip("_")
     game_dir = target / "games" / module
     if game_dir.exists():
         raise SystemExit(f"{game_dir} already exists")
     shutil.copytree(target / "games" / "_template", game_dir)
+    for bat in game_dir.glob("*.bat"):
+        bat.write_text(bat.read_text(encoding="utf-8").replace("_template", module), encoding="utf-8")
     (game_dir / "TASKS.md").write_text(
         f"# Tasks: {name}\n\nStatus: started\nNext: Phase 0 of the skill (audit, research, proposal)\n\n"
         "## Todo\n- [ ] Evidence: build version + exe SHA-256 (tools/evidence.py)\n- [ ] active hook\n"
