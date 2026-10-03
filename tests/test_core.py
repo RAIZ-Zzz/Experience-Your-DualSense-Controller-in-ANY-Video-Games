@@ -154,6 +154,13 @@ class ProfileMerge(unittest.TestCase):
         with self.assertRaises(KeyError):
             merge(base, {"controller_motion": {"motoin_mode": "M"}})
 
+    def test_nested_section_keeps_its_other_keys(self):
+        base = {"controller_haptics": {"audio": {"source": "None", "gain": 3}, "x": 1}}
+        out = merge(base, {"controller_haptics": {"audio": {"source": "SystemAudio"}}})
+        self.assertEqual(out["controller_haptics"], {"audio": {"source": "SystemAudio", "gain": 3}, "x": 1})
+        with self.assertRaises(KeyError):
+            merge(base, {"controller_haptics": {"audio": {"sorce": "SystemAudio"}}})
+
 
 if __name__ == "__main__":
     unittest.main()
