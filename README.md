@@ -1,43 +1,37 @@
-# Experience Your DualSense Controller in ANY Video Game
+# Experience Your DualSense Controller in ANY Video Game: online track
 
-Give PC games that never supported the PS5 controller **adaptive triggers and a live lightbar**, driven by
-what actually happens in the game: one trigger kick per shot fired, a lightbar that follows your health.
-Effects are sent to [DSX](https://store.steampowered.com/app/1812620/DSX/), which owns the controller.
+**Branch `online`**: for games played online, with their anti-cheat running. The game's memory is
+**never opened**. Game state comes only from sources the game allows: its own telemetry / game-state
+API, your controller input, or your PC's audio output. Read [ONLINE_RULES.md](ONLINE_RULES.md) first.
 
-## Two tracks, two branches
+For offline / single-player games (memory hooks allowed), use the [`single-player`](../../tree/single-player)
+branch; [`main`](../../tree/main) explains both tracks.
 
-How a game's state may be read depends on whether the game is played online:
+> `tests/test_online.py` scans every Python file and fails if any process-memory, injection or
+> debugging API shows up. Keep it green; never weaken it.
 
-| | [`single-player`](../../tree/single-player) | [`online`](../../tree/online) |
-|---|---|---|
-| For | offline / single-player games, played with anti-cheat off | games played online, with their anti-cheat running |
-| Data source | anything: reads and hooks the game's memory | only sources the game allows: official telemetry / game-state APIs, your own controller input, the PC's audio output |
-| Game memory | read + patched (offline only; refuses to attach while EasyAntiCheat runs) | **never opened**: enforced by a test that fails on any memory / injection API |
-| Status | Star Wars: Squadrons ✅ triggers, ✅ lightbar | framework + rules + template |
+## Status
 
-Rules for the online track: [ONLINE_RULES.md on the online branch](../../blob/online/ONLINE_RULES.md).
+Framework, rules and template. No game yet: the first candidates are games with official telemetry
+(racing games' UDP "data out", Valve's Game State Integration).
 
-`main` holds the shared core only. Both tracks build on it, and core fixes land here first and are merged
-into both branches.
-
-## Shared core (`dualsense/`)
+## Layout
 
 ```
-dsx.py        DSX UDP protocol: trigger modes, lightbar RGB, reset
-effects.py    GameState -> RT effect (one pulse per shot, adaptive length) and lightbar colour (health)
-player.py     XInput trigger read + PlayerPicker (the player's object = the one acting while you press RT)
-bridge.py     loop (read -> effects -> DSX), demo reader, CLI
-profile.py    builds a DSX controller profile from a game's dsx_profile.toml
+dualsense/            shared core (from main) + online parts:
+  telemetry.py        UdpTelemetryReader: subclass, implement parse(packet) -> GameState
+games/_online_template/   start here for a new online game
+ONLINE_RULES.md       what is never allowed, what is allowed, what to ask first
+tests/                python -m unittest discover tests (includes the guard)
 ```
 
-Requirements: Windows 10/11, Python 3.11+ (stdlib), DSX v3 with *Settings → Networking → Incoming UDP* on.
-Tests: `python -m unittest discover tests`.
+## Adding a game
 
-## Claude Code skill
+1. Check `ONLINE_RULES.md` and find an allowed source for the game.
+2. Copy `games/_online_template`, implement `parse()` from the game's published packet format.
+3. `demo.bat` to tune the feel, `start.bat` to play.
 
-[`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md) is the full workflow
-(choosing the track, finding game state, designing the feel with the player, shipping). Copy the folder
-to `~/.claude/skills/` and run `/dualsense-for-every-game`.
+The full workflow is in the Claude Code skill: [`skill/dualsense-for-every-game`](skill/dualsense-for-every-game/SKILL.md).
 
 ## License
 
