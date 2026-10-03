@@ -2,6 +2,24 @@
 
 EA app build **1.0.10.39591**, PC. Single-player only: Story and Practice.
 
+## Evidence
+
+| File | Size | Date | SHA-256 |
+|---|---|---|---|
+| `starwarssquadrons.exe` (the game) | 463792960 | 2026-09-29 | `83a55a3987f58d87551209670f5b913b245d978bac34d76193c3d502a9172467` |
+| `starwarssquadrons_launcher_eac.exe` (original EAC launcher) | 1135232 | 2026-09-29 | `b157b97091de251211f27a91a47a736eb784ee739ef08b3f1a275731770eb7a5` |
+
+The exe is encrypted on disk (EA DRM, `.ooa` section): every signature and address below exists only in
+the running game, so the hooks can only be checked at runtime (`scan.bat`).
+
+- **Runtime evidence** (seen in the running game): the three signatures match exactly once; `shot` ran
+  260 times for 260 player shots, also at "empty"; the other four energy functions never ran while
+  firing; one caller of `shot`; energy 182/182 and hull 1200/1200 at full; held fire 0.13–0.17 s apart;
+  in a busy mission the energy tick sees several ships (330 calls/s).
+- **Static inference** (read from code only): what the four unused energy functions are for (pay
+  pending, drain by fraction, add by fraction, set); that the weapon data at `[obj+0x388]` holds the
+  per-shot cost.
+
 ## Anti-cheat off (offline only)
 
 The game refuses memory access while EasyAntiCheat runs, and so does this bridge. The launcher-rename
