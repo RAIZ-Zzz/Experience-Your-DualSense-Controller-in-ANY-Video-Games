@@ -31,6 +31,13 @@ fired at "empty". It is reached through a vtable (slot `0x1436a68c8`) from one c
 Measured: held fire 0.13–0.17 s between shots (about 6.7/s), one shot costs 3.0 of 182 energy.
 In bigger missions many ships run the same code, so the player's ship is picked by RT correlation.
 
+## Research scripts (`research/`)
+
+How the hooks above were found, re-runnable on this build (run from the game, follow the comment at the
+top of each file): `find_energy_writers.bat` → `count_energy_functions.bat` → `find_shot_caller.bat`;
+`laser_pan.bat` (is the laser sound panned per cannon?), `haptics_tests.bat` (left / right output paths).
+Addresses are absolute: the game's main module always loads at `0x140000000`.
+
 ## Files
 
 `start.bat` play · `demo.bat` feel without the game · `scan.bat` signature check · `probe.bat` hooked

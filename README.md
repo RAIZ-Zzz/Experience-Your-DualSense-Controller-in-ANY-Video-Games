@@ -9,14 +9,21 @@ Single-player games without anti-cheat are on [`single-player`](../../tree/singl
 
 | Game | Offline modes | Triggers | Lightbar | Notes |
 |---|---|---|---|---|
-| Star Wars: Squadrons (EA app 1.0.10.39591) | Story, Practice | ✅ one pulse per shot, any ship | ✅ hull: green → red | [games/squadrons](games/squadrons/README.md) |
+| Star Wars: Squadrons (EA app 1.0.10.39591) | Story, Practice | ✅ one pulse per shot, any ship | ✅ hull: green → red | [games/star_wars_squadrons](games/star_wars_squadrons/README.md) |
+
+<img src="docs/images/star-wars-squadrons-lightbar.png" width="420" alt="DualSense lightbar turning yellow as the TIE fighter's hull drops">
+
+*The lightbar follows the hull: yellow here after taking damage in a TIE fighter.*
+
+Scripts for this game: [`games/star_wars_squadrons/`](games/star_wars_squadrons/) (play, demo, probe, profile)
+and [`games/star_wars_squadrons/research/`](games/star_wars_squadrons/research/) (how its hooks were found).
 
 ## Play (Squadrons)
 
-1. Switch EAC off for offline play: [games/squadrons/README.md](games/squadrons/README.md#anti-cheat-off-offline-only).
-2. Set `dsx_dir` in `games/squadrons/dsx_profile.toml` to your DSX folder.
-3. Close DSX, run `games/squadrons/apply-dsx-profile.bat`, start DSX.
-4. Run `games/squadrons/start.bat` (it waits for the game), then launch the game. Story or Practice only.
+1. Switch EAC off for offline play: [games/star_wars_squadrons/README.md](games/star_wars_squadrons/README.md#anti-cheat-off-offline-only).
+2. Set `dsx_dir` in `games/star_wars_squadrons/dsx_profile.toml` to your DSX folder.
+3. Close DSX, run `games/star_wars_squadrons/apply-dsx-profile.bat`, start DSX.
+4. Run `games/star_wars_squadrons/start.bat` (it waits for the game), then launch the game. Story or Practice only.
 5. Before playing online: close `start.bat`, then *Repair* the game in the EA app to restore EAC.
 
 `demo.bat` lets you feel and tune the effects without the game; tuning lives in `config.toml`.

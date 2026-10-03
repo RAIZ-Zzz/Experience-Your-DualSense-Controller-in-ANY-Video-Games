@@ -3,7 +3,7 @@ import tomllib
 import unittest
 from pathlib import Path
 
-from games.squadrons.reader import SPIES
+from games.star_wars_squadrons.reader import SPIES
 
 
 class Signatures(unittest.TestCase):
@@ -13,7 +13,7 @@ class Signatures(unittest.TestCase):
             self.assertLessEqual(spy.offset + spy.stolen, len(spy.pattern.split()))
 
     def test_config_has_every_section(self):
-        cfg = tomllib.loads((Path(__file__).parent.parent / "games/squadrons/config.toml").read_text(encoding="utf-8"))
+        cfg = tomllib.loads((Path(__file__).parent.parent / "games/star_wars_squadrons/config.toml").read_text(encoding="utf-8"))
         for section in ("dsx", "loop", "game", "fire", "hit", "lightbar"):
             self.assertIn(section, cfg)
 

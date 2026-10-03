@@ -1,4 +1,4 @@
-"""Star Wars: Squadrons -> DualSense. Options: --demo, --scan, --probe (python -m games.squadrons -h)."""
+"""Star Wars: Squadrons -> DualSense. Options: --demo, --scan, --probe (python -m games.star_wars_squadrons -h)."""
 from pathlib import Path
 
 from dualsense.bridge import cli
