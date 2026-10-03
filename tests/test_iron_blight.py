@@ -51,12 +51,17 @@ class Shots(unittest.TestCase):
         self.assertEqual([s.shots for s in seq], [0, 1, 0, 0, 0])
         self.assertEqual([s.slack for s in seq], [False, True, True, False, False])
 
-    def test_kick_and_melee_swing_bump_once_when_they_start(self):
+    def test_kick_rumbles_when_it_lands_not_when_pressed(self):
+        # the in-game trace of 03:03:27: press, 0.42 s wind-up, land window, done
+        seq = states(snap(4), snap(4, kicking=True), snap(4, kicking=True, kick_land=True), snap(4))
+        self.assertEqual([s.bumps for s in seq], [(), (), ("kick",), ()])
+        self.assertEqual(states(snap(8), snap(8, kick_land=True, paused=True))[1].bumps, ())
+
+    def test_melee_rumbles_when_the_blow_can_land(self):
         m = dict(melee=True, weapon="melee")
-        seq = states(snap(8), snap(8, kicking=True), snap(8, kicking=True), snap(8),
-                     snap(5, **m), snap(5, melee_attacking=True, **m), snap(4, melee_attacking=True, **m))
-        self.assertEqual([s.bumps for s in seq], [(), ("kick",), (), (), (), ("melee",), ()])
-        self.assertEqual(states(snap(8), snap(8, kicking=True, paused=True))[1].bumps, ())
+        seq = states(snap(5, **m), snap(5, melee_attacking=True, **m),
+                     snap(5, melee_attacking=True, melee_land=True, **m), snap(4, **m))
+        self.assertEqual([s.bumps for s in seq], [(), (), ("melee",), ()])
 
     def test_switching_guns_resets_the_count(self):
         self.assertEqual([s.shots for s in states(snap(8), snap(2, gun=OTHER), snap(1, gun=OTHER))], [0, 0, 1])

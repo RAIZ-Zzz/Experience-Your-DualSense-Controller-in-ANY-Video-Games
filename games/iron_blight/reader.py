@@ -7,8 +7,8 @@ keeps the names keeps working:
     GunHandler.instance       currentGun, isReloading, isCheckingAmmo, isMeleeAttacking (+ canMeleeAttackLand)
     currentGun (Gun)          ammoCount, gunType, isJammed, isMelee
 A shot = the selected gun's ammoCount dropping while it is not being reloaded or checked (one round per shot,
-shotguns too; verified with the pistol). A kick / melee swing = isKicking / isMeleeAttacking turning True
-(not yet seen in the running game)."""
+shotguns too; verified with the pistol). A kick / melee blow = canKickLand / canMeleeAttackLand turning True,
+the moment it can hit (kick measured: 0.42 s after the press; melee assumed alike)."""
 import time
 from pathlib import Path
 
@@ -130,8 +130,9 @@ class IronBlightReader:
         # slack = plain trigger: no gun in hand (holstered: GunHandler.instance is null; while holstering:
         # isSelected False), or a gun that can't fire (empty, jammed); melee has its own profile
         slack = not gun or s.get("selected") is False or (not s["melee"] and (s["ammo"] == 0 or bool(s["jammed"])))
-        # body events on the moment an action starts (False -> True); the hit itself may come later (to measure)
-        bumps = tuple(name for name, key in (("kick", "kicking"), ("melee", "melee_attacking"))
+        # body events when the blow lands, not when the button is pressed: measured 03:02-03:03, canKickLand
+        # turns True 0.42 s after isKicking (the wind-up). Melee assumed alike (canMeleeAttackLand), not measured.
+        bumps = tuple(name for name, key in (("kick", "kick_land"), ("melee", "melee_land"))
                       if s.get(key) and not self.prev.get(key))
         self.prev = s
         return GameState(attached=True, in_flight=playing, hull=hull, shots=shots if playing else 0,

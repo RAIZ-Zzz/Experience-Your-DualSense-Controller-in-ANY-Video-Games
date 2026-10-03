@@ -83,3 +83,9 @@ lessons. (Idea: universal-modder's MODLOG.md and "field note", see skill/.../ref
     Neither would count as a shot.
   - Odd: shots 8 and 9 were 11 ms apart (02:13:05.541 / .552), both counted by the game's own `shotCount`.
     Asked the user whether that was a double tap.
+- 2026-10-04 02:44 - Holster (watch, 3 rounds): isSelected False + isHolstering True for ~1 s, then
+  GunHandler.instance is null; drawing: instance back, isSelected True, Player.isHolsterDraw True briefly.
+- 2026-10-04 03:02-03:03 - Kick (watch, 3 kicks): isKicking True at the press, canKickLand True 0.42 s later
+  (wind-up), both False ~0.1-0.5 s after; currentKicks -1 at the press, +1 about 1.5-3 s later.
+  User: the kick rumble came before the kick. Moved it to canKickLand's rising edge; melee moved to
+  canMeleeAttackLand by analogy (not measured yet).

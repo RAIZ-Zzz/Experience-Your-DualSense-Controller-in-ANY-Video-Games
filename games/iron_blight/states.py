@@ -59,10 +59,10 @@ def frames(st):
     event = st["event"]
     if event == "shot":
         before |= {"ammo": after["ammo"] + 1, "jammed": False, "shot_count": 4}
-    elif event == "kick":
-        after["kicking"] = True
+    elif event == "kick":                                                 # the blow lands (wind-up before)
+        before["kicking"] = after["kicking"] = after["kick_land"] = True
     elif event == "melee_swing":
-        after["melee_attacking"] = True
+        before["melee_attacking"] = after["melee_attacking"] = after["melee_land"] = True
     elif event == "melee_hit":
         before["ammo"] = after["ammo"] + 1                                # durability drops on a hit
     elif event == "hurt":
