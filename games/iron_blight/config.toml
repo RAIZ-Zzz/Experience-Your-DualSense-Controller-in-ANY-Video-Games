@@ -87,12 +87,12 @@ rumble_right = 0.7
 rumble_seconds = 0.15
 
 [hit]                  # health drop -> lightbar flash
-min_drop = 0.01        # hull fraction lost in one frame that counts as a hit
+min_drop = 0.01        # health fraction lost in one frame that counts as a hit
 
-[lightbar]             # hull -> lightbar colour while flying (menus keep the DSX profile colour)
+[lightbar]             # health -> lightbar colour while playing (menus keep the DSX profile colour)
 enabled = true
-red_at = 0.2           # hull fraction that is full red; 100% is green, halfway between is yellow
+red_at = 0.2           # health fraction that is full red; 100% is green, halfway between is yellow
 critical = 0.25        # below this the light pulses ...
-pulse_hz = [1.0, 3.0]  # ... from this speed at `critical` to this speed at 0 hull
+pulse_hz = [1.0, 3.0]  # ... from this speed at `critical` to this speed at 0 health
 pulse_min = 0.25       # darkest point of the pulse (0-1)
-smooth_seconds = 0.4   # colour eases over ~3x this; a hit snaps to red and eases back to the hull colour
+smooth_seconds = 0.4   # colour eases over ~3x this; a hit snaps to red and eases back to the health colour
