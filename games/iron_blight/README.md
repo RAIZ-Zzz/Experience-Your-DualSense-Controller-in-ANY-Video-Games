@@ -20,8 +20,13 @@ Requirements: Windows, Python 3.11+ (standard library only), DSX v3 with *Incomi
    `dsx_profile.toml` → `dsx_dir`.
 2. Close DSX, run `apply-dsx-profile.bat` (writes the DSX profile "Iron Blight": virtual Xbox 360 pad,
    Xbox rumble → haptics; backs up the old one as `.dsx.bak`), start DSX.
-3. `demo.bat` to feel the effects without the game; `start.bat` to play (start it before or after the
-   game). The first attach takes about 40 s (it scans the game's memory for the classes once).
+3. `install.bat`: from now on it runs in the background (no window) from Windows logon, waits for the
+   game and attaches by itself; just start the game. While the game is not running it sends nothing to
+   DSX and looks for the game every 3 s. The first attach takes about 40 s (it scans the game's memory
+   for the classes once). Log: `%TEMP%\dualsense_iron_blight.log`. `uninstall.bat` stops it and removes it
+   from logon. Without installing: `start.bat` before or after the game.
+
+`demo.bat` lets you feel the effects without the game.
 
 ## Evidence
 
@@ -67,7 +72,7 @@ the read loop runs every 5 ms.
 
 ## Files
 
-`start.bat` play · `demo.bat` feel without the game · `watch.bat` print the values read (nothing sent to
+`install.bat` / `uninstall.bat` run in the background from logon, or stop · `start.bat` play once · `demo.bat` feel without the game · `watch.bat` print the values read (nothing sent to
 DSX; also logged to `%TEMP%\iron_blight_watch.log`) · `apply-dsx-profile.bat` write the DSX profile
 (DSX closed) · `config.toml` strengths per weapon · `states.py` / `states.json` every game state simulated
 and checked against the design rules (`python -m games.iron_blight --states`).
