@@ -22,8 +22,11 @@ def load_config(path):
         return tomllib.load(f)
 
 
+IDLE_SECONDS = 3.0
+
+
 def run(reader, dsx, cfg, stop=None):
-    """stop: a Path; the loop ends cleanly once it exists (checked once a second; autostart's "off")."""
+    """stop: a Path; the loop ends cleanly once it exists (checked about once a second; autostart's "off")."""
     effects = Effects(cfg)
     period = 1 / cfg["loop"]["hz"]
     resend = cfg["dsx"]["resend_seconds"]
@@ -58,8 +61,9 @@ def run(reader, dsx, cfg, stop=None):
             if r != last_rumble:                             # only on change: a game's own rumble is left alone
                 rumble(*r)
                 last_rumble = r
-            # waiting for the game: look once a second instead of spinning at loop.hz
-            time.sleep(max(0.0, (period if state.attached else 1.0) - (time.monotonic() - now)))
+            # waiting for the game: look every IDLE_SECONDS instead of spinning at loop.hz (a process scan
+            # costs ~7 ms: 0.7 % of a core at 1 s, 0.2 % at 3 s; a game takes longer than that to load anyway)
+            time.sleep(max(0.0, (period if state.attached else IDLE_SECONDS) - (time.monotonic() - now)))
     except KeyboardInterrupt:
         pass
     finally:
