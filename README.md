@@ -13,6 +13,7 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 | Game | Build | Branch | Trigger (RT) | Lightbar | Download | Source |
 |---|---|---|---|---|---|---|
 | Star Wars: Squadrons | EA app 1.0.10.39591 | `online` (has EAC, offline modes only) | one pulse per shot fired, any ship and weapon | follows hull: green → yellow → red, red flash on hits, pulses below 25 % | [v1.0 zip](../../releases/tag/star-wars-squadrons-v1.0) | [online: games/star_wars_squadrons](../../tree/online/games/star_wars_squadrons) |
+| Iron Blight | Steam build 25439780 | `single-player` (no anti-cheat) | one pulse + right-grip kick per shot, per weapon; slack when the gun can't fire; kick / melee rumble | follows health: green → yellow → red, red flash on hits, pulses below 25 % | [v0.1 zip](../../releases/tag/iron-blight-v0.1) (pistol tested) | [single-player: games/iron_blight](../../tree/single-player/games/iron_blight) |
 
 ## Known limitations
 
@@ -28,7 +29,7 @@ anti-cheat runs, is never supported: the memory layer refuses to attach while an
 | Games | single-player games **without** anti-cheat | games **with** online modes and an anti-cheat (EAC, ...) |
 | How | hook the game, play | play **only its offline modes, with the anti-cheat switched off**, then restore it before going online |
 | Rules | offline use, otherwise free | strict: [ANTI_CHEAT_RULES.md on the online branch](../../blob/online/ANTI_CHEAT_RULES.md) |
-| Games so far | none yet | Star Wars: Squadrons |
+| Games so far | Iron Blight | Star Wars: Squadrons |
 
 `main` holds everything the two branches share. Core fixes land here first and are merged into both.
 
