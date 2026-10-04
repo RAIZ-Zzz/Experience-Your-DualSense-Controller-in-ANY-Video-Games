@@ -1,9 +1,15 @@
 """Core tests. Run from the repo root:  python -m unittest discover tests"""
+import io
 import json
+import tempfile
 import tomllib
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
+from dualsense import autostart
+from dualsense.bridge import run
 from dualsense.dsx import Mode, Trigger, TriggerEffect, build_packet
 from dualsense.effects import Effects, GameState
 from dualsense.player import PlayerPicker
@@ -12,6 +18,59 @@ from dualsense.profile import merge
 # Reference tuning (the Squadrons values; every game config has the same sections).
 CFG = tomllib.loads((Path(__file__).parent.parent / "tests/config.toml").read_text(encoding="utf-8"))
 FLYING = dict(attached=True, in_flight=True)
+
+
+class BackgroundBridge(unittest.TestCase):
+    """autostart keeps the bridge running all the time: without the game it must leave DSX alone."""
+
+    class FakeDSX:
+        addr = ("127.0.0.1", 0)
+
+        def __init__(self):
+            self.log = []
+
+        def send(self, right, rgb=None):
+            self.log.append("send")
+
+        def reset(self):
+            self.log.append("reset")
+
+    def run_states(self, states, stop=None):
+        it = iter(states)
+
+        class Reader:
+            def read(self):
+                try:
+                    return next(it)
+                except StopIteration:
+                    raise KeyboardInterrupt           # run() treats it as Ctrl+C
+
+            def close(self):
+                pass
+
+        dsx = self.FakeDSX()
+        with mock.patch("dualsense.bridge.time.sleep"), redirect_stdout(io.StringIO()):
+            run(Reader(), dsx, CFG, *[stop] if stop else [])
+        return dsx.log
+
+    def test_sends_nothing_until_the_game_runs(self):
+        log = self.run_states([GameState()] * 5 + [GameState(**FLYING)] + [GameState()] * 5)
+        self.assertEqual(log, ["send", "reset", "reset"])     # play, game closed, exit
+
+    def test_stop_file_ends_the_loop(self):
+        with tempfile.TemporaryDirectory() as d:
+            stop = Path(d) / "stop"
+            stop.touch()
+            self.assertEqual(self.run_states([GameState(**FLYING)] * 5, stop), ["reset"])
+
+    def test_one_bridge_per_game(self):
+        first = autostart.claim("_test_game")
+        try:
+            self.assertIsNone(autostart.claim("_test_game"))
+            self.assertTrue(autostart.running("_test_game"))
+        finally:
+            first.close()
+        self.assertFalse(autostart.running("_test_game"))
 
 
 class DSXPacket(unittest.TestCase):
