@@ -13,7 +13,7 @@ Next: feel-tune with the player (kick / melee timing, per-weapon strength)
 - [ ] Shots 8 and 9 were 11 ms apart on 2026-10-04 02:13:05: double tap or the game's last-round logic?
 - [ ] DSX audio haptics: does it stay on after a DSX restart without applying the profile?
 - [ ] First attach takes ~40 s (full memory scan); restrict the scan to private RW regions if it bothers
-- [ ] README (Evidence, How the state was found, Measured) and release zip (Phase 5)
+- [ ] Release v1.0 once every weapon has been felt (v0.1 = pistol, kick, melee)
 
 ## Done
 - [x] Evidence: build version + SHA-256 (MODLOG.md)
@@ -27,3 +27,4 @@ Next: feel-tune with the player (kick / melee timing, per-weapon strength)
 - [x] DSX profile: Xbox rumble -> haptics, audio haptics kept on, Trigger To Haptics off
 - [x] states.py: 550 states enumerated, 7 design rules, states.json reviewed; old bugs proven caught
 - [x] watch.bat also logs to %TEMP%\iron_blight_watch.log
+- [x] README (Setup, Evidence, How the state was found, Measured); release iron-blight-v0.1 (pre-release)
